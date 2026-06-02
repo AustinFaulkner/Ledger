@@ -1,0 +1,8 @@
+{
+  "id": "lease-liability-pv-newco",
+  "category": "lease_accounting",
+  "prompt": "On January 1, NewCo enters a 5-year operating lease for warehouse space under ASC 842. The lease requires fixed payments of $50,000 payable at the END of each of the 5 years (an ordinary annuity). There are no variable payments, no purchase option, and no initial direct costs. The rate implicit in the lease is not readily determinable, so NewCo uses its incremental borrowing rate of 6.00% per year to discount the payments. Compute the lease liability at commencement as the present value of the five lease payments. Round to the nearest cent.",
+  "expected": {
+    "lease_liability": 210618.19
+  }
+}

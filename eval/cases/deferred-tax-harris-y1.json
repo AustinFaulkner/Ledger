@@ -1,0 +1,9 @@
+{
+  "id": "deferred-tax-harris-y1",
+  "category": "deferred_taxes",
+  "prompt": "Harris Inc., first year of operations. Accounting income for the year is $1,305,000. On December 31 Harris made a $60,000 rent payment representing 4 years of advance rent (only $15,000 is deductible this year for books; the full $60,000 is deductible for tax). Warranty expense for the year was $500,000; cash paid on warranty claims was $425,000 (warranty is deductible for tax only when paid). The enacted tax rate is 27% this year. Compute taxable income and the current income tax expense (income tax payable) for Year 1.",
+  "expected": {
+    "taxable_income": 1275000,
+    "income_tax_payable": 344250
+  }
+}

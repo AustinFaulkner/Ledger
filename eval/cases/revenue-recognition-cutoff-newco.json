@@ -1,0 +1,9 @@
+{
+  "id": "revenue-recognition-cutoff-newco",
+  "category": "revenue_recognition",
+  "prompt": "NewCo reported revenue of $14,750,000 for the fiscal year. A Quality-of-Earnings review of revenue cutoff and non-recurring items under ASC 606 identifies four corrections: (1) $620,000 of revenue was booked under a bill-and-hold arrangement where the goods had not shipped and control had not transferred to the customer at year-end (remove); (2) a perpetual software license was recognized fully upfront, but $480,000 of it relates to unperformed post-contract support that should be recognized ratably in future periods (remove); (3) a $215,000 non-recurring gain on the sale of equipment was incorrectly classified within revenue rather than as a non-operating item (remove); and (4) $90,000 of subscription services were delivered during the period but, due to an invoicing timing error, were not recorded as revenue until the following period (add). Starting from reported revenue and applying all four corrections, compute adjusted revenue and the total revenue adjustment (adjusted revenue minus reported revenue).",
+  "expected": {
+    "adjusted_revenue": 13525000,
+    "revenue_adjustment": -1225000
+  }
+}

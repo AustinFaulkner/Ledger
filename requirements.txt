@@ -1,0 +1,26 @@
+# --- Model backend (provider-agnostic) ---
+openai>=1.40           # OpenAI-compatible client: vLLM/SGLang-hosted Qwen, DashScope, Bedrock OpenAI endpoint, etc.
+boto3>=1.34            # optional: Amazon Bedrock Converse backend
+
+# --- Core ---
+pydantic>=2.7
+python-dotenv>=1.0
+fastapi>=0.111
+uvicorn>=0.30
+python-multipart>=0.0.9   # multipart file uploads (dashboard)
+
+# --- Document ingestion ---
+openpyxl>=3.1          # .xlsx parsing (CSV/TSV read verbatim; no pandas — keeps the EXE lean)
+xlrd>=2.0              # legacy .xls parsing (openpyxl can't read .xls)
+pypdf>=4.2             # PDF text extraction
+python-docx>=1.1       # .docx parsing
+python-pptx>=0.6       # .pptx (PowerPoint / CIM decks)
+striprtf>=0.0.26       # .rtf parsing
+
+# --- Retrieval ---
+fastembed>=0.3         # local ONNX embeddings for RAG (no GPU; graceful keyword fallback if absent)
+
+# --- CLI / utils ---
+typer>=0.12
+rich>=13.7
+numpy>=1.26            # embedding math / cosine similarity

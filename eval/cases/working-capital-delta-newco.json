@@ -1,0 +1,8 @@
+{
+  "id": "working-capital-delta-newco",
+  "category": "working_capital",
+  "prompt": "As part of a Quality-of-Earnings review you measure the change in net working capital between two fiscal year-ends. Use operating working capital only (exclude cash and any interest-bearing debt). Prior year-end balances: accounts receivable $2,400,000; inventory $1,800,000; prepaid expenses $250,000; accounts payable $1,350,000; accrued liabilities $600,000. Current year-end balances: accounts receivable $3,100,000; inventory $2,050,000; prepaid expenses $310,000; accounts payable $1,520,000; accrued liabilities $740,000. Net working capital = (AR + inventory + prepaid expenses) - (accounts payable + accrued liabilities). Compute the change in net working capital (current period net working capital minus prior period net working capital).",
+  "expected": {
+    "change_in_nwc": 700000
+  }
+}

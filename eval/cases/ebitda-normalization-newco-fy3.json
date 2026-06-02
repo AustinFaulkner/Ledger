@@ -1,0 +1,8 @@
+{
+  "id": "ebitda-normalization-newco-fy3",
+  "category": "ebitda_normalization",
+  "prompt": "NewCo reported EBITDA of $8,400,000 for FY3. As part of a Quality-of-Earnings review you assess management's proposed normalizations. The following items require adjustment: (1) the founder's compensation exceeded a market-rate replacement salary by $650,000 (excess owner compensation, add back); (2) a one-time legal settlement of $1,200,000 was expensed during the year (non-recurring, add back); (3) $375,000 of non-recurring consulting and restructuring fees were incurred for a failed acquisition (add back); (4) reported revenue included a $900,000 one-time government relief grant that will not recur (deduct); and (5) a product line discontinued before year-end contributed $540,000 of EBITDA that will not exist going forward (deduct). Starting from reported EBITDA and applying all five adjustments, compute normalized EBITDA.",
+  "expected": {
+    "normalized_ebitda": 9185000
+  }
+}

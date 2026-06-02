@@ -1,0 +1,4 @@
+# Extra deps for building/running the desktop app. Install on top of requirements.txt:
+#   pip install -r requirements-desktop.txt
+pywebview>=5.1         # native app window (Edge WebView2 on Windows)
+pyinstaller>=6.6       # compile to a single EXE

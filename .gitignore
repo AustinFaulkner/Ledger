@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Secrets & local config
+.env
+*.local
+
+# Data (never commit client/financial data)
+data/**
+!data/**/.gitkeep
+!data/**/README*
+
+# Indexes / artifacts
+*.index
+*.faiss
+.cache/
+index/
+
+# Desktop build (PyInstaller)
+build/
+dist/
+dist_exe/
+build_exe_tmp/
+*.manifest
+
+# Prefetched embedding model (downloaded at build time)
+models/
+
+# Frontend
+node_modules/
+frontend/dist/
+
+# Docker
+.dockerignore.local
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
