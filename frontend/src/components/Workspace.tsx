@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { api } from "../api";
 import type { ProjectDetail } from "../types";
-import { cn } from "../lib";
+import { SECTION_LABEL, type Section } from "../nav";
 import Dashboard from "./Dashboard";
 import DataRoom from "./DataRoom";
 import SearchView from "./SearchView";
@@ -15,18 +15,6 @@ import ChatPanel from "./ChatPanel";
 import ReportView from "./ReportView";
 import SourceViewer from "./SourceViewer";
 
-type Tab =
-  | "dashboard"
-  | "dataroom"
-  | "search"
-  | "qoe"
-  | "workingcapital"
-  | "redflags"
-  | "matrix"
-  | "trackers"
-  | "diligence"
-  | "report";
-
 interface Cite {
   filename: string;
   kind: string;
@@ -35,36 +23,35 @@ interface Cite {
   claim: string;
 }
 
-export default function Workspace({
-  projectId,
-  onBack,
-  onDelete,
-}: {
+interface Props {
   projectId: string;
-  onBack: () => void;
-  onDelete: () => void;
-}) {
+  section: Section;
+  onSection: (s: Section) => void;
+}
+
+export default function Workspace({ projectId, section, onSection }: Props) {
   const [detail, setDetail] = useState<ProjectDetail | null>(null);
-  const [tab, setTab] = useState<Tab>("dashboard");
   const [cite, setCite] = useState<Cite | null>(null);
   const [citeLoading, setCiteLoading] = useState(false);
 
-  // Docked panel takes ~46% of the window, clamped — computed once.
   const panelWidth = useMemo(() => {
     const w = typeof window !== "undefined" ? window.innerWidth : 1280;
-    return Math.min(680, Math.max(440, Math.round(w * 0.46)));
+    return Math.min(680, Math.max(440, Math.round(w * 0.44)));
   }, []);
 
   async function refresh() {
     setDetail(await api.getProject(projectId));
   }
-
   useEffect(() => {
     refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
-  // Open the docked source panel to a cited file + highlight the evidence. `claim` is
-  // the secondary locator used when the model didn't emit a verbatim quote.
+  // close the docked source panel when changing section
+  useEffect(() => {
+    setCite(null);
+  }, [section]);
+
   async function openCite(source: string, quote: string, claim = "") {
     if (!detail) return;
     const doc = detail.documents.find((d) => d.filename === source);
@@ -86,103 +73,60 @@ export default function Workspace({
 
   if (!detail) return <div className="p-12 font-mono text-sm text-muted">Loading deal…</div>;
 
-  const tabs: [Tab, string][] = [
-    ["dashboard", "Dashboard"],
-    ["dataroom", "Data Room"],
-    ["search", "Search"],
-    ["qoe", "Quality of Earnings"],
-    ["workingcapital", "Working Capital"],
-    ["redflags", "Red Flags"],
-    ["matrix", "Diligence Matrix"],
-    ["trackers", "Trackers"],
-    ["diligence", "Q&A"],
-    ["report", "Report"],
-  ];
+  const hasDocs = detail.documents.length > 0;
   const chunks = detail.documents.reduce((a, d) => a + d.n_chunks, 0);
+
+  function renderSection() {
+    switch (section) {
+      case "dashboard":
+        return <Dashboard projectId={projectId} detail={detail!} onNavigate={(t) => onSection(t as Section)} />;
+      case "dataroom":
+        return <DataRoom detail={detail!} onChanged={refresh} />;
+      case "search":
+        return <SearchView projectId={projectId} kinds={detail!.documents.map((d) => d.kind)} onCite={openCite} />;
+      case "qoe":
+        return <QoEReport projectId={projectId} hasDocs={hasDocs} onCite={openCite} />;
+      case "workingcapital":
+        return <WorkingCapital projectId={projectId} hasDocs={hasDocs} onCite={openCite} />;
+      case "redflags":
+        return <RedFlags projectId={projectId} hasDocs={hasDocs} onCite={openCite} />;
+      case "matrix":
+        return <DiligenceMatrix projectId={projectId} hasDocs={hasDocs} onCite={openCite} />;
+      case "trackers":
+        return <Trackers projectId={projectId} />;
+      case "diligence":
+        return <ChatPanel projectId={projectId} hasDocs={hasDocs} onCite={openCite} />;
+      case "report":
+        return <ReportView projectId={projectId} company={detail!.company ?? detail!.name} dealName={detail!.name} />;
+    }
+  }
 
   return (
     <div className="flex h-full">
-      {/* main analysis column — shrinks when the source panel docks in */}
-      <div className="min-w-0 flex-1 overflow-y-auto px-10 py-9">
-        <div className="no-print mb-6 flex items-center justify-between">
-          <button onClick={onBack} className="btn-ghost text-xs">
-            ← All deals
-          </button>
-          <button
-            onClick={onDelete}
-            className="font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:text-negative"
-          >
-            Delete deal
-          </button>
-        </div>
-
-        <div className="no-print flex items-end justify-between">
-          <div>
-            <div className="eyebrow mb-2">Deal · {detail.name}</div>
-            <h1 className="font-display text-4xl font-medium tracking-tight text-parchment">
-              {detail.company ?? detail.name}
-            </h1>
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        {/* slim, sticky section header */}
+        <div className="no-print flex shrink-0 items-center justify-between border-b border-line bg-ink/60 px-10 py-4 backdrop-blur-sm">
+          <div className="min-w-0">
+            <div className="eyebrow mb-0.5 truncate">
+              {detail.company ?? detail.name} · {detail.name}
+            </div>
+            <h1 className="font-display text-2xl tracking-tight text-parchment">{SECTION_LABEL[section]}</h1>
           </div>
-          <div className="text-right font-mono text-xs text-muted">
+          <div className="shrink-0 text-right font-mono text-[11px] text-muted">
             <div>{detail.documents.length} documents</div>
             <div>{chunks} chunks indexed</div>
           </div>
         </div>
 
-        <div className="no-print mt-7 flex gap-6 overflow-x-auto border-b border-line">
-          {tabs.map(([k, label]) => (
-            <button
-              key={k}
-              onClick={() => setTab(k)}
-              className={cn(
-                "relative -mb-px shrink-0 whitespace-nowrap pb-3 font-body text-sm transition-colors",
-                tab === k ? "text-parchment" : "text-muted hover:text-parchment"
-              )}
-            >
-              {label}
-              {tab === k && <span className="absolute inset-x-0 -bottom-px h-0.5 bg-brass" />}
-            </button>
-          ))}
-        </div>
-
-        <div className="py-8">
-          {(() => {
-            const hasDocs = detail.documents.length > 0;
-            switch (tab) {
-              case "dashboard":
-                return <Dashboard projectId={projectId} detail={detail} onNavigate={(t) => setTab(t as Tab)} />;
-              case "dataroom":
-                return <DataRoom detail={detail} onChanged={refresh} />;
-              case "search":
-                return (
-                  <SearchView
-                    projectId={projectId}
-                    kinds={detail.documents.map((d) => d.kind)}
-                    onCite={openCite}
-                  />
-                );
-              case "qoe":
-                return <QoEReport projectId={projectId} hasDocs={hasDocs} onCite={openCite} />;
-              case "workingcapital":
-                return <WorkingCapital projectId={projectId} hasDocs={hasDocs} onCite={openCite} />;
-              case "redflags":
-                return <RedFlags projectId={projectId} hasDocs={hasDocs} onCite={openCite} />;
-              case "matrix":
-                return <DiligenceMatrix projectId={projectId} hasDocs={hasDocs} onCite={openCite} />;
-              case "trackers":
-                return <Trackers projectId={projectId} />;
-              case "diligence":
-                return <ChatPanel projectId={projectId} hasDocs={hasDocs} onCite={openCite} />;
-              case "report":
-                return (
-                  <ReportView
-                    projectId={projectId}
-                    company={detail.company ?? detail.name}
-                    dealName={detail.name}
-                  />
-                );
-            }
-          })()}
+        <div className="min-h-0 flex-1 overflow-y-auto px-10 py-8">
+          <motion.div
+            key={section}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {renderSection()}
+          </motion.div>
         </div>
       </div>
 
