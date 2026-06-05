@@ -14,14 +14,15 @@ QOE_MODULES = [
     "qoe.api", "qoe.config", "qoe.llm", "qoe.qoe", "qoe.diligence",
     "qoe.retrieval", "qoe.ingest", "qoe.store", "qoe.embeddings",
     "qoe.redflags", "qoe.working_capital", "qoe.diligence_matrix", "qoe.readiness",
-    "qoe.search", "qoe.profiling", "qoe.financials", "qoe.taxonomy",
+    "qoe.search", "qoe.profiling", "qoe.financials", "qoe.taxonomy", "qoe.databook",
 ]
 hiddenimports = (
     collect_submodules("uvicorn")
     + QOE_MODULES
     + ["anyio", "fastapi", "starlette", "multipart", "webview"]
-    # document-ingestion parsers (imported lazily inside qoe.ingest handlers)
-    + ["xlrd", "striprtf", "striprtf.striprtf", "docx", "pypdf"]
+    # document-ingestion parsers (imported lazily inside qoe.ingest handlers, so list
+    # them explicitly — a missing one silently breaks that file type in the bundle)
+    + ["openpyxl", "xlrd", "striprtf", "striprtf.striprtf", "docx", "pypdf", "et_xmlfile"]
 )
 
 # Heavy packages installed globally (other projects) that this app never imports.

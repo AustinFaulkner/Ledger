@@ -39,6 +39,18 @@ export default function ReportView({ projectId, company, dealName }: Props) {
   const [loading, setLoading] = useState(true);
   const [gen, setGen] = useState<Record<string, string>>({});
   const [generating, setGenerating] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
+  async function downloadDatabook() {
+    setDownloading(true);
+    try {
+      await api.downloadDatabook(projectId);
+    } catch {
+      /* surfaced via the browser/network; keep the toolbar quiet */
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   async function load() {
     setLoading(true);
@@ -122,6 +134,9 @@ export default function ReportView({ projectId, company, dealName }: Props) {
           </button>
           <button className="btn-ghost text-xs" disabled={generating} onClick={load}>
             Refresh
+          </button>
+          <button className="btn-ghost text-xs" disabled={downloading} onClick={downloadDatabook}>
+            {downloading ? "Preparing…" : "Download Excel"}
           </button>
           <button className="btn text-xs" onClick={() => window.print()}>
             Print / Save as PDF

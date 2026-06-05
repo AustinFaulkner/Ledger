@@ -71,6 +71,21 @@ export const api = {
 
   getFinancials: (id: string) => fetch(`${BASE}/projects/${id}/financials`).then(json<FinancialSummary>),
 
+  // Fetch the Excel databook and trigger a download (works in pywebview + browser).
+  downloadDatabook: async (id: string) => {
+    const res = await fetch(`${BASE}/projects/${id}/databook.xlsx`);
+    if (!res.ok) throw new Error(`${res.status}: ${await res.text().catch(() => res.statusText)}`);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "diligence-databook.xlsx";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  },
+
   getCachedQoE: (id: string) =>
     fetch(`${BASE}/projects/${id}/reports/qoe`).then(json<CachedReport<QoEReport> | null>),
   getCachedRedFlags: (id: string) =>

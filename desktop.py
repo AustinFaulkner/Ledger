@@ -79,7 +79,9 @@ def main() -> int:
         print("Backend failed to start.", file=sys.stderr)
         return 1
 
-    # Headless smoke-test mode: confirm it serves AND embeddings run, then exit.
+    # Headless smoke-test mode: confirm it serves, embeddings run, AND the document
+    # parsers are actually bundled + functional (a lazy-imported parser that didn't get
+    # packaged would silently break that file type — guard against it here), then exit.
     if os.environ.get("LEDGER_HEADLESS"):
         dim = 0
         try:
@@ -89,7 +91,34 @@ def main() -> int:
         except Exception as exc:  # noqa: BLE001
             dim = -1
             print(f"embeddings error: {exc}", file=sys.stderr)
-        print(f"OK | serving {url} | embeddings={'on' if dim > 0 else 'off'} dim={dim}")
+
+        missing = []
+        for name in ("openpyxl", "pypdf", "docx", "xlrd", "pptx", "striprtf"):
+            try:
+                __import__(name)
+            except Exception:
+                missing.append(name)
+
+        xlsx_chunks = -1  # functional check of the real ingest pipeline in the frozen build
+        try:
+            import tempfile
+            from openpyxl import Workbook
+            from qoe import ingest
+            probe = Path(tempfile.gettempdir()) / "_ledger_probe.xlsx"
+            wb = Workbook()
+            wb.active.append(["item", "FY0"])
+            wb.active.append(["Revenue", 3420345])
+            wb.save(probe)
+            xlsx_chunks = len(ingest.load_file(probe))
+            probe.unlink(missing_ok=True)
+        except Exception as exc:  # noqa: BLE001
+            print(f"xlsx probe error: {exc}", file=sys.stderr)
+
+        print(
+            f"OK | serving {url} | embeddings={'on' if dim > 0 else 'off'} dim={dim} | "
+            f"parsers={'all-ok' if not missing else 'MISSING:' + ','.join(missing)} | "
+            f"xlsx_chunks={xlsx_chunks}"
+        )
         return 0
 
     # Native app window, falling back to the browser.

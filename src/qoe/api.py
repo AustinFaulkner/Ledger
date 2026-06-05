@@ -18,10 +18,12 @@ from pathlib import Path
 
 from fastapi import APIRouter, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import (
+    databook,
     diligence,
     diligence_matrix,
     embeddings,
@@ -240,6 +242,20 @@ def get_financials(pid: str) -> dict:
     if not store.get_project(pid):
         raise HTTPException(404, "project not found")
     return financials.extract(pid)
+
+
+@api.get("/projects/{pid}/databook.xlsx")
+def download_databook(pid: str):
+    """The Excel databook — every schedule (financials, bridge, NWC, red flags,
+    readiness, profile) in one workbook, the deliverable that ships with the PDF."""
+    if not store.get_project(pid):
+        raise HTTPException(404, "project not found")
+    content = databook.build(pid)
+    return Response(
+        content=content,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="databook-{pid[:8]}.xlsx"'},
+    )
 
 
 @api.get("/projects/{pid}/reports/{kind}")
