@@ -1,19 +1,26 @@
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import { api } from "../api";
 import type { Project } from "../types";
-import { shortDate } from "../lib";
+import { shortDate, groupByCompany } from "../lib";
 
 interface Props {
   projects: Project[];
   onCreated: (p: Project) => void;
   onOpen: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
-export default function ProjectsView({ projects, onCreated, onOpen }: Props) {
+export default function ProjectsView({ projects, onCreated, onOpen, onDelete }: Props) {
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
   const [busy, setBusy] = useState(false);
+
+  const companies = useMemo(
+    () => Array.from(new Set(projects.map((p) => (p.company || "").trim()).filter(Boolean))).sort(),
+    [projects]
+  );
+  const groups = useMemo(() => groupByCompany(projects), [projects]);
 
   async function create(e: FormEvent) {
     e.preventDefault();
@@ -26,6 +33,18 @@ export default function ProjectsView({ projects, onCreated, onOpen }: Props) {
       onCreated(p);
     } finally {
       setBusy(false);
+    }
+  }
+
+  function confirmDelete(p: Project) {
+    const label = p.company ? `${p.company} — ${p.name}` : p.name;
+    if (window.confirm(`Delete "${label}"?\n\nThis permanently removes its documents, analyses, and trackers.`)) {
+      onDelete(p.id);
+    }
+  }
+  function confirmDeleteCompany(companyName: string, deals: Project[]) {
+    if (window.confirm(`Delete ${companyName} and all ${deals.length} deals?\n\nThis permanently removes everything for this company.`)) {
+      deals.forEach((d) => onDelete(d.id));
     }
   }
 
@@ -49,10 +68,17 @@ export default function ProjectsView({ projects, onCreated, onOpen }: Props) {
         <div className="flex flex-col gap-3 sm:flex-row">
           <input
             className="field"
+            list="company-suggestions"
             placeholder="Target company — e.g. NewCo Industrial"
             value={company}
             onChange={(e) => setCompany(e.target.value)}
+            autoComplete="off"
           />
+          <datalist id="company-suggestions">
+            {companies.map((c) => (
+              <option key={c} value={c} />
+            ))}
+          </datalist>
           <input
             className="field"
             placeholder="Deal name — e.g. Project Falcon"
@@ -63,34 +89,67 @@ export default function ProjectsView({ projects, onCreated, onOpen }: Props) {
             {busy ? "Opening…" : "Open deal →"}
           </button>
         </div>
+        {company.trim() && companies.includes(company.trim()) && (
+          <p className="mt-3 font-mono text-[11px] text-brass/80">
+            ↳ Existing company — this deal will be grouped under {company.trim()}.
+          </p>
+        )}
       </form>
 
       <div className="eyebrow mb-4">Active deals</div>
-      <div className="grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2">
-        {projects.map((p, i) => (
-          <motion.button
-            key={p.id}
-            onClick={() => onOpen(p.id)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: i * 0.04 }}
-            className="group bg-surface/70 p-6 text-left transition-colors hover:bg-surface2"
-          >
-            <div className="flex items-baseline justify-between">
-              <h3 className="font-display text-xl text-parchment transition-colors group-hover:text-brass">
-                {p.company ?? p.name}
-              </h3>
-              <span className="num text-[11px] text-muted">{shortDate(p.created_at)}</span>
-            </div>
-            <div className="mt-1 font-mono text-xs uppercase tracking-wider text-muted">{p.name}</div>
-          </motion.button>
-        ))}
-        {projects.length === 0 && (
-          <div className="bg-surface/70 p-10 text-center text-sm text-muted sm:col-span-2">
-            No deals yet — open one above.
-          </div>
-        )}
-      </div>
+      {projects.length === 0 ? (
+        <div className="panel px-6 py-12 text-center text-sm text-muted">No deals yet — open one above.</div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {groups.map(([companyName, deals], gi) => (
+            <motion.div
+              key={companyName}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: gi * 0.03 }}
+              className="panel p-5"
+            >
+              <div className="flex items-baseline justify-between">
+                <h3 className="truncate font-display text-xl text-parchment">{companyName}</h3>
+                {deals.length > 1 && <span className="chip shrink-0">{deals.length} deals</span>}
+              </div>
+              <div className="mt-3 space-y-1">
+                {deals.map((d) => (
+                  <div
+                    key={d.id}
+                    className="group flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface2"
+                  >
+                    <button
+                      onClick={() => onOpen(d.id)}
+                      className="flex min-w-0 flex-1 items-baseline justify-between gap-3 text-left"
+                    >
+                      <span className="truncate font-body text-sm text-parchment transition-colors group-hover:text-brass">
+                        {d.name}
+                      </span>
+                      <span className="num shrink-0 text-[11px] text-muted">{shortDate(d.created_at)}</span>
+                    </button>
+                    <button
+                      onClick={() => confirmDelete(d)}
+                      title="Delete deal"
+                      className="shrink-0 px-1 font-mono text-xs text-muted opacity-0 transition-opacity hover:text-negative group-hover:opacity-100"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {deals.length > 1 && (
+                <button
+                  onClick={() => confirmDeleteCompany(companyName, deals)}
+                  className="mt-3 font-mono text-[10.5px] uppercase tracking-wider text-muted transition-colors hover:text-negative"
+                >
+                  Delete all {deals.length} deals
+                </button>
+              )}
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

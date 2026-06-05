@@ -114,6 +114,17 @@ def get_project(pid: str) -> dict | None:
     return dict(row) if row else None
 
 
+def delete_project(pid: str) -> None:
+    """Delete a project and everything belonging to it (chunks, documents, cached
+    reports, tracker items). On-disk files are removed by the caller."""
+    con = _conn()
+    for table in ("chunks", "documents", "reports", "tracker_items"):
+        con.execute(f"DELETE FROM {table} WHERE project_id=?", (pid,))
+    con.execute("DELETE FROM projects WHERE id=?", (pid,))
+    con.commit()
+    con.close()
+
+
 # --- documents ---
 
 def add_document(project_id: str, filename: str, path: str, kind: str,

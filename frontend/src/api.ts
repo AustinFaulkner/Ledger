@@ -44,6 +44,9 @@ export const api = {
 
   getProject: (id: string) => fetch(`${BASE}/projects/${id}`).then(json<ProjectDetail>),
 
+  deleteProject: (id: string) =>
+    fetch(`${BASE}/projects/${id}`, { method: "DELETE" }).then(json<{ ok: boolean }>),
+
   getDocumentContent: (pid: string, docId: string) =>
     fetch(`${BASE}/projects/${pid}/documents/${docId}/content`).then(json<DocContent>),
 

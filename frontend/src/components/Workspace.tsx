@@ -35,7 +35,15 @@ interface Cite {
   claim: string;
 }
 
-export default function Workspace({ projectId, onBack }: { projectId: string; onBack: () => void }) {
+export default function Workspace({
+  projectId,
+  onBack,
+  onDelete,
+}: {
+  projectId: string;
+  onBack: () => void;
+  onDelete: () => void;
+}) {
   const [detail, setDetail] = useState<ProjectDetail | null>(null);
   const [tab, setTab] = useState<Tab>("dashboard");
   const [cite, setCite] = useState<Cite | null>(null);
@@ -96,9 +104,17 @@ export default function Workspace({ projectId, onBack }: { projectId: string; on
     <div className="flex h-full">
       {/* main analysis column — shrinks when the source panel docks in */}
       <div className="min-w-0 flex-1 overflow-y-auto px-10 py-9">
-        <button onClick={onBack} className="no-print btn-ghost mb-6 text-xs">
-          ← All deals
-        </button>
+        <div className="no-print mb-6 flex items-center justify-between">
+          <button onClick={onBack} className="btn-ghost text-xs">
+            ← All deals
+          </button>
+          <button
+            onClick={onDelete}
+            className="font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:text-negative"
+          >
+            Delete deal
+          </button>
+        </div>
 
         <div className="no-print flex items-end justify-between">
           <div>

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import shutil
 import sys
 import zipfile
 from pathlib import Path
@@ -121,6 +122,16 @@ def get_project(pid: str) -> dict:
     if not project:
         raise HTTPException(404, "project not found")
     return {**project, "documents": store.list_documents(pid)}
+
+
+@api.delete("/projects/{pid}")
+def delete_project(pid: str) -> dict:
+    """Delete a deal and all of its data (documents, chunks, analyses, trackers, files)."""
+    if not store.get_project(pid):
+        raise HTTPException(404, "project not found")
+    store.delete_project(pid)
+    shutil.rmtree(settings.data_root / "projects" / pid, ignore_errors=True)
+    return {"ok": True}
 
 
 def _ingest_file(pid: str, filename: str, data: bytes) -> dict:
