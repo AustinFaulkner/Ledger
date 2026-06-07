@@ -50,16 +50,11 @@ export default function ProjectsView({ projects, onCreated, onOpen, onDelete }: 
 
   return (
     <div className="mx-auto h-full max-w-5xl overflow-y-auto px-10 py-14">
-      <header className="mb-12">
-        <div className="eyebrow mb-4">Diligence Workspace</div>
-        <h1 className="font-display text-5xl font-medium leading-[1.04] tracking-tight text-parchment">
-          Read the numbers.
-          <br />
-          <span className="text-brass">Find the truth.</span>
-        </h1>
-        <p className="mt-5 max-w-xl font-body text-[15px] leading-relaxed text-muted">
-          Open a deal, drop in the data room, and generate a quality-of-earnings analysis with a
-          normalized EBITDA bridge — then interrogate the documents with cited answers.
+      <header className="mb-10">
+        <h1 className="font-display text-3xl font-medium tracking-tight text-parchment">Deals</h1>
+        <p className="mt-3 max-w-xl font-body text-sm leading-relaxed text-muted">
+          Create a deal, upload its documents, and run quality-of-earnings, working-capital, and
+          risk analysis. Answers cite their source; export a report or Excel databook.
         </p>
       </header>
 

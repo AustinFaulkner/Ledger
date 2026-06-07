@@ -28,10 +28,10 @@ export default function RedFlags({ projectId, hasDocs, onCite }: Props) {
     return (
       <div className="panel flex flex-col items-center justify-center px-6 py-20 text-center">
         <div className="eyebrow mb-3">Risk &amp; Red Flags</div>
-        <h2 className="font-display text-2xl text-parchment">Surface what a buyer should chase down</h2>
+        <h2 className="font-display text-2xl text-parchment">Earnings-quality risks</h2>
         <p className="mt-3 max-w-md font-body text-sm leading-relaxed text-muted">
-          A forensic pass over the data room: aggressive add-backs, customer concentration, revenue
-          cut-off, cash-conversion and related-party signals — ranked by severity, each tied to its source.
+          Aggressive add-backs, customer concentration, revenue cut-off, cash-conversion and
+          related-party signals — ranked by severity, each tied to its source.
         </p>
         <button className="btn mt-7" disabled={busy || !hasDocs || !loaded} onClick={regenerate}>
           {busy ? "Scanning…" : loaded ? "Scan for red flags →" : "Loading…"}

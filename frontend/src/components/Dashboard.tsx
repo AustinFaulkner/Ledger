@@ -139,7 +139,7 @@ export default function Dashboard({ projectId, detail, onNavigate }: Props) {
           </ul>
         ) : (
           <p className="mt-4 font-body text-sm text-muted">
-            No red-flag scan yet — run it to surface the risks a buyer should chase down.
+            No red-flag scan yet — run it to identify earnings-quality risks.
           </p>
         )}
       </div>

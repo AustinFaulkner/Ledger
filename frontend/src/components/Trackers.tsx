@@ -68,7 +68,7 @@ export default function Trackers({ projectId }: { projectId: string }) {
     return (
       <div className="panel flex flex-col items-center justify-center px-6 py-20 text-center">
         <div className="eyebrow mb-3">Diligence Trackers</div>
-        <h2 className="font-display text-2xl text-parchment">Track every open request to closure</h2>
+        <h2 className="font-display text-2xl text-parchment">Request checklist</h2>
         <p className="mt-3 max-w-md font-body text-sm leading-relaxed text-muted">
           A working checklist of diligence requests — owner, status, category. Start from the standard
           request list, then add your own.

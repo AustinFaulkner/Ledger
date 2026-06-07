@@ -132,7 +132,7 @@ export default function ChatPanel({ projectId, hasDocs, onCite }: Props) {
       {turns.length === 0 && (
         <div className="panel mb-6 p-7 text-center">
           <div className="eyebrow mb-2">Diligence Q&amp;A</div>
-          <h2 className="font-display text-2xl text-parchment">Ask the data room</h2>
+          <h2 className="font-display text-2xl text-parchment">Ask a question</h2>
           <p className="mt-2 font-body text-sm text-muted">
             Answers are grounded in the uploaded documents and cite their source.
           </p>

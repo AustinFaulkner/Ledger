@@ -28,10 +28,10 @@ export default function QoEReport({ projectId, hasDocs, onCite }: Props) {
     return (
       <div className="panel flex flex-col items-center justify-center px-6 py-20 text-center">
         <div className="eyebrow mb-3">Quality of Earnings</div>
-        <h2 className="font-display text-2xl text-parchment">Normalize EBITDA, flag the add-backs</h2>
+        <h2 className="font-display text-2xl text-parchment">Normalized EBITDA bridge</h2>
         <p className="mt-3 max-w-md font-body text-sm leading-relaxed text-muted">
-          Runs an analyst pass over the data room: a reported → normalized EBITDA bridge, each
-          adjustment classified, plus revenue-quality and working-capital flags.
+          Produces a reported → normalized EBITDA bridge with each adjustment classified, plus
+          revenue-quality and working-capital flags.
         </p>
         <button className="btn mt-7" disabled={busy || !hasDocs || !loaded} onClick={regenerate}>
           {busy ? "Analyzing…" : loaded ? "Run analysis →" : "Loading…"}
