@@ -102,7 +102,10 @@ def create_project(name: str, company: str | None = None) -> dict:
 
 def list_projects() -> list[dict]:
     con = _conn()
-    rows = con.execute("SELECT * FROM projects ORDER BY created_at DESC").fetchall()
+    rows = con.execute(
+        "SELECT p.*, (SELECT COUNT(*) FROM documents d WHERE d.project_id = p.id) AS n_documents "
+        "FROM projects p ORDER BY p.created_at DESC"
+    ).fetchall()
     con.close()
     return [dict(r) for r in rows]
 

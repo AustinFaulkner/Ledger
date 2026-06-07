@@ -3,6 +3,7 @@ export interface Project {
   name: string;
   company: string | null;
   created_at: string;
+  n_documents?: number; // included by the projects list (used to pick the landing section)
 }
 
 export interface Doc {

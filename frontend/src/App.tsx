@@ -26,7 +26,13 @@ export default function App() {
 
   function openDeal(id: string) {
     setSelectedId(id);
-    setSection("dashboard");
+    // Land on Documents when the deal has no files yet; otherwise the Dashboard.
+    const p = projects.find((x) => x.id === id);
+    setSection((p?.n_documents ?? 0) > 0 ? "dashboard" : "dataroom");
+  }
+  function goHome() {
+    setSelectedId(null);
+    refresh(); // refresh document counts so re-opening lands on the right section
   }
   async function remove(id: string) {
     await api.deleteProject(id).catch(() => {});
@@ -54,7 +60,7 @@ export default function App() {
             deal={selected}
             section={section}
             onSection={setSection}
-            onBack={() => setSelectedId(null)}
+            onBack={goHome}
             onDelete={() => confirmDelete(selected)}
           />
         ) : (
@@ -83,7 +89,8 @@ export default function App() {
               projects={projects}
               onCreated={async (p) => {
                 await refresh();
-                openDeal(p.id);
+                setSelectedId(p.id);
+                setSection("dataroom"); // a brand-new deal has no files yet
               }}
               onOpen={openDeal}
               onDelete={remove}
