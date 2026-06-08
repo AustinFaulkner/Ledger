@@ -60,6 +60,11 @@ def init_db() -> None:
             created_at TEXT NOT NULL
         );
         CREATE INDEX IF NOT EXISTS idx_trackers_project ON tracker_items(project_id);
+        CREATE TABLE IF NOT EXISTS matrix_questions (
+            id TEXT PRIMARY KEY, project_id TEXT NOT NULL, category TEXT,
+            question TEXT NOT NULL, created_at TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_matrix_project ON matrix_questions(project_id);
         """
     )
     # migration: content_hash for de-duplication (older DBs predate this column)
@@ -119,9 +124,9 @@ def get_project(pid: str) -> dict | None:
 
 def delete_project(pid: str) -> None:
     """Delete a project and everything belonging to it (chunks, documents, cached
-    reports, tracker items). On-disk files are removed by the caller."""
+    reports, tracker items, matrix questions). On-disk files are removed by the caller."""
     con = _conn()
-    for table in ("chunks", "documents", "reports", "tracker_items"):
+    for table in ("chunks", "documents", "reports", "tracker_items", "matrix_questions"):
         con.execute(f"DELETE FROM {table} WHERE project_id=?", (pid,))
     con.execute("DELETE FROM projects WHERE id=?", (pid,))
     con.commit()
@@ -279,5 +284,60 @@ def update_tracker_item(item_id: str, **fields) -> dict | None:
 def delete_tracker_item(item_id: str) -> None:
     con = _conn()
     con.execute("DELETE FROM tracker_items WHERE id=?", (item_id,))
+    con.commit()
+    con.close()
+
+
+# --- editable diligence-matrix questions (per project) ---
+
+def add_matrix_question(project_id: str, category: str | None, question: str) -> dict:
+    qid = _uid()
+    con = _conn()
+    con.execute(
+        "INSERT INTO matrix_questions (id, project_id, category, question, created_at) VALUES (?,?,?,?,?)",
+        (qid, project_id, category, question, _now()),
+    )
+    con.commit()
+    con.close()
+    return get_matrix_question(qid)  # type: ignore[return-value]
+
+
+def get_matrix_question(qid: str) -> dict | None:
+    con = _conn()
+    row = con.execute("SELECT * FROM matrix_questions WHERE id=?", (qid,)).fetchone()
+    con.close()
+    return dict(row) if row else None
+
+
+def list_matrix_questions(project_id: str) -> list[dict]:
+    con = _conn()
+    rows = con.execute(
+        "SELECT * FROM matrix_questions WHERE project_id=? ORDER BY created_at", (project_id,)
+    ).fetchall()
+    con.close()
+    return [dict(r) for r in rows]
+
+
+def update_matrix_question(qid: str, **fields) -> dict | None:
+    allowed = {k: v for k, v in fields.items() if k in {"category", "question"}}
+    if allowed:
+        con = _conn()
+        sets = ", ".join(f"{k}=?" for k in allowed)
+        con.execute(f"UPDATE matrix_questions SET {sets} WHERE id=?", (*allowed.values(), qid))
+        con.commit()
+        con.close()
+    return get_matrix_question(qid)
+
+
+def delete_matrix_question(qid: str) -> None:
+    con = _conn()
+    con.execute("DELETE FROM matrix_questions WHERE id=?", (qid,))
+    con.commit()
+    con.close()
+
+
+def clear_matrix_questions(project_id: str) -> None:
+    con = _conn()
+    con.execute("DELETE FROM matrix_questions WHERE project_id=?", (project_id,))
     con.commit()
     con.close()

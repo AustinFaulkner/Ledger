@@ -7,6 +7,7 @@ import type {
   DocProfile,
   FinancialSummary,
   MatrixGroup,
+  MatrixQuestion,
   Project,
   ProjectDetail,
   QoEReport,
@@ -129,6 +130,24 @@ export const api = {
     fetch(`${BASE}/projects/${id}/readiness`).then(json<ReadinessReport>),
 
   getMatrixTemplate: () => fetch(`${BASE}/matrix/template`).then(json<MatrixGroup[]>),
+
+  getMatrix: (id: string) => fetch(`${BASE}/projects/${id}/matrix`).then(json<MatrixQuestion[]>),
+  addMatrixQuestion: (id: string, body: { question: string; category?: string }) =>
+    fetch(`${BASE}/projects/${id}/matrix`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }).then(json<MatrixQuestion>),
+  updateMatrixQuestion: (id: string, qid: string, patch: { question?: string; category?: string }) =>
+    fetch(`${BASE}/projects/${id}/matrix/${qid}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    }).then(json<MatrixQuestion>),
+  deleteMatrixQuestion: (id: string, qid: string) =>
+    fetch(`${BASE}/projects/${id}/matrix/${qid}`, { method: "DELETE" }).then(json<{ ok: boolean }>),
+  resetMatrix: (id: string) =>
+    fetch(`${BASE}/projects/${id}/matrix/reset`, { method: "POST" }).then(json<MatrixQuestion[]>),
 
   ask: (id: string, question: string) =>
     fetch(`${BASE}/projects/${id}/ask`, {

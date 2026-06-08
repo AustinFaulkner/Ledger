@@ -129,6 +129,15 @@ export interface MatrixGroup {
   questions: string[];
 }
 
+// --- Editable diligence matrix questions (per project) ---
+export interface MatrixQuestion {
+  id: string;
+  project_id: string;
+  category: string | null;
+  question: string;
+  created_at: string;
+}
+
 // --- Cross-document search ---
 export interface SearchHit {
   document_id: string;

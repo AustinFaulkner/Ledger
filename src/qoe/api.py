@@ -84,6 +84,16 @@ class TrackerPatch(BaseModel):
     note: str | None = None
 
 
+class MatrixQuestionIn(BaseModel):
+    question: str
+    category: str | None = None
+
+
+class MatrixQuestionPatch(BaseModel):
+    question: str | None = None
+    category: str | None = None
+
+
 # The standard diligence request list used to seed an empty tracker.
 DEFAULT_TRACKERS: list[tuple[str, str]] = [
     ("Obtain 3 years of audited financial statements", "Finance"),
@@ -336,8 +346,60 @@ def remove_tracker(pid: str, item_id: str) -> dict:
 
 @api.get("/matrix/template")
 def matrix_template() -> list[dict]:
-    """The standard diligence question set the Matrix view runs across the data room."""
+    """The standard diligence question set, used to seed a project's editable matrix."""
     return diligence_matrix.MATRIX_TEMPLATE
+
+
+def _seed_matrix(pid: str) -> None:
+    for group in diligence_matrix.MATRIX_TEMPLATE:
+        for q in group["questions"]:
+            store.add_matrix_question(pid, group["category"], q)
+
+
+@api.get("/projects/{pid}/matrix")
+def get_matrix(pid: str) -> list[dict]:
+    """The project's editable diligence questions; seeded from the standard set the first time."""
+    if not store.get_project(pid):
+        raise HTTPException(404, "project not found")
+    questions = store.list_matrix_questions(pid)
+    if not questions:
+        _seed_matrix(pid)
+        questions = store.list_matrix_questions(pid)
+    return questions
+
+
+@api.post("/projects/{pid}/matrix")
+def add_matrix_question(pid: str, body: MatrixQuestionIn) -> dict:
+    if not store.get_project(pid):
+        raise HTTPException(404, "project not found")
+    return store.add_matrix_question(pid, body.category, body.question)
+
+
+@api.patch("/projects/{pid}/matrix/{qid}")
+def patch_matrix_question(pid: str, qid: str, body: MatrixQuestionPatch) -> dict:
+    q = store.get_matrix_question(qid)
+    if not q or q["project_id"] != pid:
+        raise HTTPException(404, "question not found")
+    return store.update_matrix_question(qid, **body.model_dump(exclude_none=True))
+
+
+@api.delete("/projects/{pid}/matrix/{qid}")
+def delete_matrix_question(pid: str, qid: str) -> dict:
+    q = store.get_matrix_question(qid)
+    if not q or q["project_id"] != pid:
+        raise HTTPException(404, "question not found")
+    store.delete_matrix_question(qid)
+    return {"ok": True}
+
+
+@api.post("/projects/{pid}/matrix/reset")
+def reset_matrix(pid: str) -> list[dict]:
+    """Discard custom questions and restore the standard diligence set."""
+    if not store.get_project(pid):
+        raise HTTPException(404, "project not found")
+    store.clear_matrix_questions(pid)
+    _seed_matrix(pid)
+    return store.list_matrix_questions(pid)
 
 
 @api.post("/projects/{pid}/ask")
