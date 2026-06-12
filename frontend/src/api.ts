@@ -5,6 +5,7 @@ import type {
   Doc,
   DocContent,
   DocProfile,
+  DocStatus,
   FinancialSummary,
   MatrixGroup,
   MatrixQuestion,
@@ -50,6 +51,9 @@ export const api = {
 
   getDocumentContent: (pid: string, docId: string) =>
     fetch(`${BASE}/projects/${pid}/documents/${docId}/content`).then(json<DocContent>),
+
+  getDocumentStatus: (pid: string, docId: string) =>
+    fetch(`${BASE}/projects/${pid}/documents/${docId}/status`).then(json<DocStatus>),
 
   uploadDocument: (id: string, file: File) => {
     const form = new FormData();

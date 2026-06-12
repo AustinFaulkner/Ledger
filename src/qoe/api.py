@@ -10,6 +10,7 @@ is what lets it ship as one self-contained desktop EXE. Run:
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import io
 import shutil
@@ -51,8 +52,11 @@ app.add_middleware(
 
 
 @app.on_event("startup")
-def _startup() -> None:
+async def _startup() -> None:
     store.init_db()
+    # Calibrate embedding throughput once per machine; runs in a thread so startup isn't blocked.
+    if embeddings.AVAILABLE:
+        asyncio.create_task(asyncio.to_thread(embeddings.calibrate))
 
 
 # --------------------------------------------------------------------- /api routes
@@ -144,9 +148,49 @@ def delete_project(pid: str) -> dict:
     return {"ok": True}
 
 
-def _ingest_file(pid: str, filename: str, data: bytes) -> dict:
-    """Persist + chunk + embed one file. De-duplicates by content hash: an identical
-    file already in the project is skipped and returned with ``duplicate: True``."""
+# Small batches keep progress updates frequent; tuned for single-thread CPU embedding.
+_EMBED_BATCH = 8
+
+
+def _ingest_one(pid: str, did: str, path: Path) -> None:
+    """Parse + embed one file in a background thread, streaming progress into the DB."""
+    try:
+        chunks = ingest.load_file(path)
+        n = len(chunks)
+        store.update_document(did, chunks_total=n)
+
+        if embeddings.AVAILABLE and chunks:
+            spc = embeddings.secs_per_chunk()
+            texts = [c.text for c in chunks]
+            embs: list[list[float]] = []
+            for i in range(0, n, _EMBED_BATCH):
+                embs.extend(embeddings.embed(texts[i : i + _EMBED_BATCH]))
+                done = min(i + _EMBED_BATCH, n)
+                store.update_document(did, chunks_done=done,
+                                      eta_seconds=max(0.0, (n - done) * spc))
+        else:
+            embs = None
+
+        store.add_chunks(pid, did, chunks, embs)
+        store.update_document(did, status="ingested", n_chunks=n,
+                              chunks_done=n, eta_seconds=0.0)
+    except Exception:
+        store.update_document(did, status="error")
+
+
+def _ingest_many(pid: str, members: list[tuple[str, Path]]) -> None:
+    """Process a batch of (doc_id, path) pairs sequentially — avoids CPU contention
+    from parallel embed workers all thrashing the same cores."""
+    for did, path in members:
+        _ingest_one(pid, did, path)
+
+
+@api.post("/projects/{pid}/documents")
+async def upload_document(pid: str, file: UploadFile = File(...)) -> dict:
+    if not store.get_project(pid):
+        raise HTTPException(404, "project not found")
+
+    data = await file.read()
     digest = hashlib.sha256(data).hexdigest()
     existing = store.find_document_by_hash(pid, digest)
     if existing:
@@ -154,29 +198,20 @@ def _ingest_file(pid: str, filename: str, data: bytes) -> dict:
 
     dest_dir = settings.data_root / "projects" / pid
     dest_dir.mkdir(parents=True, exist_ok=True)
-    safe_name = Path(filename or "upload").name  # strip any zip sub-folders
+    safe_name = Path(file.filename or "upload").name
     path = dest_dir / safe_name
     path.write_bytes(data)
-
-    chunks = ingest.load_file(path)
-    embs = embeddings.embed([c.text for c in chunks]) if (embeddings.AVAILABLE and chunks) else None
     kind = path.suffix.lower().lstrip(".")
-    doc = store.add_document(pid, safe_name, str(path), kind, "ingested", len(chunks), content_hash=digest)
-    store.add_chunks(pid, doc["id"], chunks, embs)
+    doc = store.add_document(pid, safe_name, str(path), kind, "indexing", 0, content_hash=digest)
+
+    asyncio.create_task(asyncio.to_thread(_ingest_one, pid, doc["id"], path))
     return {**doc, "duplicate": False}
-
-
-@api.post("/projects/{pid}/documents")
-async def upload_document(pid: str, file: UploadFile = File(...)) -> dict:
-    if not store.get_project(pid):
-        raise HTTPException(404, "project not found")
-    return _ingest_file(pid, file.filename or "upload", await file.read())
 
 
 @api.post("/projects/{pid}/documents/bulk")
 async def upload_bulk(pid: str, file: UploadFile = File(...)) -> dict:
-    """Ingest a whole data room from a single .zip — every supported member is chunked,
-    embedded and de-duplicated; unsupported members are reported as skipped."""
+    """Ingest a whole data room from a single .zip — files are queued immediately and
+    embedded in the background; the response returns as soon as files are written."""
     if not store.get_project(pid):
         raise HTTPException(404, "project not found")
     try:
@@ -184,7 +219,12 @@ async def upload_bulk(pid: str, file: UploadFile = File(...)) -> dict:
     except zipfile.BadZipFile:
         raise HTTPException(400, "not a valid .zip file")
 
+    dest_dir = settings.data_root / "projects" / pid
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
     ingested, duplicates, skipped = [], [], []
+    members: list[tuple[str, Path]] = []
+
     for name in zf.namelist():
         base = Path(name).name
         if name.endswith("/") or not base or base.startswith("."):
@@ -192,8 +232,21 @@ async def upload_bulk(pid: str, file: UploadFile = File(...)) -> dict:
         if Path(base).suffix.lower() not in ingest.SUPPORTED:
             skipped.append(base)
             continue
-        res = _ingest_file(pid, base, zf.read(name))
-        (duplicates if res.get("duplicate") else ingested).append(res["filename"])
+        data = zf.read(name)
+        digest = hashlib.sha256(data).hexdigest()
+        existing = store.find_document_by_hash(pid, digest)
+        if existing:
+            duplicates.append(base)
+            continue
+        path = dest_dir / base
+        path.write_bytes(data)
+        kind = Path(base).suffix.lower().lstrip(".")
+        doc = store.add_document(pid, base, str(path), kind, "indexing", 0, content_hash=digest)
+        ingested.append(base)
+        members.append((doc["id"], path))
+
+    if members:
+        asyncio.create_task(asyncio.to_thread(_ingest_many, pid, members))
     return {"ingested": ingested, "duplicates": duplicates, "skipped": skipped}
 
 
@@ -216,6 +269,22 @@ def profile_dataroom(pid: str) -> list[dict]:
 @api.get("/projects/{pid}/documents")
 def list_documents(pid: str) -> list[dict]:
     return store.list_documents(pid)
+
+
+@api.get("/projects/{pid}/documents/{doc_id}/status")
+def document_status(pid: str, doc_id: str) -> dict:
+    """Ingest progress for a single document — polled by the UI during background indexing."""
+    doc = store.get_document(doc_id)
+    if not doc or doc["project_id"] != pid:
+        raise HTTPException(404, "document not found")
+    return {
+        "id": doc_id,
+        "status": doc["status"],
+        "n_chunks": doc["n_chunks"] or 0,
+        "chunks_total": doc.get("chunks_total") or 0,
+        "chunks_done": doc.get("chunks_done") or 0,
+        "eta_seconds": doc.get("eta_seconds"),
+    }
 
 
 @api.get("/projects/{pid}/documents/{doc_id}/content")

@@ -15,13 +15,23 @@ to keyword search.
 
 from __future__ import annotations
 
+import json
 import os
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
 
 MODEL_NAME = "BAAI/bge-base-en-v1.5"
+
+_CALIBRATION_PATH = Path.home() / ".ledger" / "calibration.json"
+# ~200-token prose chunk — representative of what a 10-K narrative produces
+_WARMUP_TEXT = (
+    "Revenue recognition policy requires delivery of performance obligations under ASC 606. "
+    "The company recognizes revenue when control of promised goods or services is transferred "
+    "to customers in an amount that reflects the consideration expected to be received. "
+) * 8
 
 try:
     from fastembed import TextEmbedding  # noqa: F401
@@ -54,6 +64,41 @@ def _model():
             else TextEmbedding(model_name=MODEL_NAME)
         )
     return _MODEL
+
+
+def secs_per_chunk() -> float:
+    """Best-effort seconds-per-embed-chunk for this machine. Falls back to a conservative default."""
+    try:
+        if _CALIBRATION_PATH.exists():
+            data = json.loads(_CALIBRATION_PATH.read_text())
+            if data.get("model") == MODEL_NAME and data.get("secs_per_chunk"):
+                return float(data["secs_per_chunk"])
+    except Exception:
+        pass
+    return 0.45  # conservative default (~Ryzen 4500U pace)
+
+
+def calibrate(n: int = 16) -> float:
+    """Measure seconds-per-chunk on this machine and cache to ~/.ledger/calibration.json.
+    Called once at startup in a background thread; subsequent calls return the cached value."""
+    try:
+        if _CALIBRATION_PATH.exists():
+            data = json.loads(_CALIBRATION_PATH.read_text())
+            if data.get("model") == MODEL_NAME and data.get("secs_per_chunk"):
+                return float(data["secs_per_chunk"])
+
+        m = _model()
+        sample = [_WARMUP_TEXT] * n
+        _ = list(m.embed(sample))  # warmup — loads JIT kernels
+        t0 = time.perf_counter()
+        _ = list(m.embed(sample))
+        secs = (time.perf_counter() - t0) / n
+
+        _CALIBRATION_PATH.parent.mkdir(parents=True, exist_ok=True)
+        _CALIBRATION_PATH.write_text(json.dumps({"model": MODEL_NAME, "secs_per_chunk": round(secs, 4)}))
+        return secs
+    except Exception:
+        return secs_per_chunk()
 
 
 def embed(texts: list[str]) -> list[list[float]]:

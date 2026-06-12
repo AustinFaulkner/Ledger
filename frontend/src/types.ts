@@ -13,7 +13,19 @@ export interface Doc {
   kind: string;
   status: string;
   n_chunks: number;
+  chunks_total: number;
+  chunks_done: number;
+  eta_seconds: number | null;
   created_at: string;
+}
+
+export interface DocStatus {
+  id: string;
+  status: string;
+  n_chunks: number;
+  chunks_total: number;
+  chunks_done: number;
+  eta_seconds: number | null;
 }
 
 export interface ProjectDetail extends Project {

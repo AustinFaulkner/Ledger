@@ -71,6 +71,14 @@ def init_db() -> None:
     cols = {r[1] for r in con.execute("PRAGMA table_info(documents)").fetchall()}
     if "content_hash" not in cols:
         con.execute("ALTER TABLE documents ADD COLUMN content_hash TEXT")
+    # migration: ingest-progress columns for background async ingest
+    for col, typedef in [
+        ("chunks_total", "INTEGER DEFAULT 0"),
+        ("chunks_done",  "INTEGER DEFAULT 0"),
+        ("eta_seconds",  "REAL"),
+    ]:
+        if col not in cols:
+            con.execute(f"ALTER TABLE documents ADD COLUMN {col} {typedef}")
     # migration: fingerprint on reports (the data-room state an analysis was run against)
     rcols = {r[1] for r in con.execute("PRAGMA table_info(reports)").fetchall()}
     if "fingerprint" not in rcols:
@@ -148,6 +156,19 @@ def add_document(project_id: str, filename: str, path: str, kind: str,
     con.commit()
     con.close()
     return get_document(did)  # type: ignore[return-value]
+
+
+def update_document(did: str, **fields) -> None:
+    """Update any subset of document columns — used by the background ingest worker."""
+    allowed = {k: v for k, v in fields.items()
+               if k in {"status", "n_chunks", "chunks_total", "chunks_done", "eta_seconds"}}
+    if not allowed:
+        return
+    con = _conn()
+    sets = ", ".join(f"{k}=?" for k in allowed)
+    con.execute(f"UPDATE documents SET {sets} WHERE id=?", (*allowed.values(), did))
+    con.commit()
+    con.close()
 
 
 def find_document_by_hash(project_id: str, content_hash: str) -> dict | None:
