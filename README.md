@@ -1,17 +1,17 @@
-# Ledger — QoE & Diligence Analyzer
+# Ledger: QoE & Diligence Analyzer
 
-An AI quality-of-earnings and due-diligence tool for private-equity deal teams. Upload a target's data room and it produces a normalized EBITDA bridge, working-capital and red-flag analysis, cited answers, and an exportable report — all grounded in the source documents.
+Small demo of an AI RAG tailed for quality-of-earnings and due-diligence. Upload a target's data room and it produces a normalized EBITDA bridge, working-capital and red-flag analysis, cited answers, and an exportable report.
 
 ## Features
 
-- **Quality of Earnings** — reported → normalized EBITDA bridge with each add-back classified.
-- **Working capital & proof of cash** — NWC components, a target peg, and debt-like items.
-- **Red flags** — ranked earnings-quality risks, each tied to a source quote.
-- **Diligence matrix** — an editable, per-deal question set answered across every document at once.
-- **Cited Q&A** — answers link back to the exact sentence in the source.
-- **Data room** — PDF, Excel, Word, PowerPoint, CSV, and more; ZIP upload, dedup, search, profiling, readiness, and auto-categorization.
-- **Report** — print to PDF or export an Excel databook.
-- **Provider-agnostic** — runs on any OpenAI-compatible endpoint (Qwen, OpenAI, OpenRouter, Bedrock) with one env var. Bring your own token.
+- **Quality of Earnings**: reported → normalized EBITDA bridge with each add-back classified.
+- **Working capital & proof of cash**: NWC components, a target peg, and debt-like items.
+- **Red flags**: ranked earnings-quality risks, each tied to a source quote.
+- **Diligence matrix**: an editable, per-deal question set answered across every document at once.
+- **Cited Q&A**: answers link back to the exact sentence in the source.
+- **Data room**: PDF, Excel, Word, PowerPoint, CSV, and more; ZIP upload, dedup, search, profiling, readiness, and auto-categorization.
+- **Report**: print to PDF or export an Excel databook.
+- **Provider-agnostic**: runs on any OpenAI-compatible endpoint (Qwen, OpenAI, OpenRouter, Bedrock) with one env var. Bring your own token.
 
 ## Project Structure
 
@@ -84,8 +84,8 @@ Open `.env` and paste your key into `LLM_API_KEY`. Any OpenAI-compatible token w
 
 Where the `.env` goes depends on how you run the app:
 
-- **Desktop EXE** — put `.env` in `dist_exe\`, next to `LedgerDiligence.exe`.
-- **Docker / from source** — keep `.env` in the project root.
+- **Desktop EXE**: put `.env` in `dist_exe\`, next to `LedgerDiligence.exe`.
+- **Docker / from source**: keep `.env` in the project root.
 
 Only the AI analysis and Q&A need a key; document upload, search, and profiling work offline without one.
 
@@ -96,7 +96,7 @@ Only the AI analysis and Q&A need a key; document upload, search, and profiling 
 3. Ask questions or run the diligence matrix.
 4. Open the Report tab to print a PDF or download the Excel databook.
 
-Citations are clickable — selecting one opens the source document and highlights the supporting text.
+Citations are clickable. Selecting one opens the source document and highlights the supporting text.
 
 ## How It Works
 
