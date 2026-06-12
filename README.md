@@ -29,34 +29,65 @@ An AI quality-of-earnings and due-diligence tool for private-equity deal teams. 
 
 ## Requirements
 
+- Git
 - Python 3.11+
 - Node 20+ (to build the dashboard)
 - An API key for any OpenAI-compatible LLM endpoint
 
 ## Build
 
-Desktop app (single Windows EXE):
+1. Clone the repo:
 
-```bat
-build_exe.bat
-```
+   ```bash
+   git clone https://github.com/AustinFaulkner/qoe-diligence-analyzer.git
+   cd qoe-diligence-analyzer
+   ```
 
-Output is `dist_exe\LedgerDiligence.exe`. Put a `.env` (with `LLM_API_KEY`) next to it and double-click.
+2. Build the desktop app (single Windows EXE):
 
-Docker (Linux web app):
+   ```bat
+   build_exe.bat
+   ```
+
+   This builds the dashboard, installs the dependencies, bundles the embedding model, and compiles `dist_exe\LedgerDiligence.exe`. It takes a few minutes.
+
+3. Create a `.env` (see [Configuration](#configuration)) and place it in `dist_exe\`, next to the EXE.
+
+4. Double-click `LedgerDiligence.exe`.
+
+Alternatives to the EXE:
+
+- **Docker** (Linux web app):
+
+  ```bash
+  docker build -t ledger-diligence .
+  docker run -p 8000:8000 --env-file .env ledger-diligence
+  ```
+
+- **Run from source:**
+
+  ```bash
+  pip install -r requirements.txt
+  cd frontend && npm install && npm run build && cd ..
+  python desktop.py
+  ```
+
+## Configuration
+
+The app reads its settings from a `.env` file. Create one from the template:
 
 ```bash
-docker build -t ledger-diligence .
-docker run -p 8000:8000 --env-file .env ledger-diligence
+copy .env.example .env        # Windows  (macOS/Linux: cp .env.example .env)
 ```
 
-From source:
+Open `.env` and paste your key into `LLM_API_KEY`. Any OpenAI-compatible token works (OpenRouter, OpenAI, Together, Fireworks, DashScope, Bedrock, or a self-hosted endpoint); the defaults target a Qwen model on OpenRouter, so change `LLM_PROVIDER` and the model lines if you use a different one.
 
-```bash
-pip install -r requirements.txt
-cd frontend && npm install && npm run build && cd ..
-python desktop.py
-```
+Where the `.env` goes depends on how you run the app:
+
+- **Desktop EXE** — put `.env` in `dist_exe\`, next to `LedgerDiligence.exe`.
+- **Docker / from source** — keep `.env` in the project root.
+
+Only the AI analysis and Q&A need a key; document upload, search, and profiling work offline without one.
 
 ## Usage
 
