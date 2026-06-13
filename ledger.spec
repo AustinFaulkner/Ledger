@@ -47,7 +47,8 @@ EXCLUDES = [
 # Collect the embedding stack in full — Python modules, native DLLs, and package data.
 # onnxruntime ships native libraries; tokenizers is a Rust extension; both need their
 # binaries/data or the model won't load inside the bundle.
-for pkg in ("fastembed", "onnxruntime", "tokenizers", "huggingface_hub", "pydantic", "pptx"):
+for pkg in ("fastembed", "onnxruntime", "tokenizers", "huggingface_hub", "pydantic", "pptx",
+            "openai", "httpx", "httpcore", "anyio"):
     pkg_datas, pkg_binaries, pkg_hidden = collect_all(pkg)
     datas += pkg_datas
     binaries += pkg_binaries
