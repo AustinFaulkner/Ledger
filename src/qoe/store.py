@@ -65,6 +65,9 @@ def init_db() -> None:
             question TEXT NOT NULL, created_at TEXT NOT NULL
         );
         CREATE INDEX IF NOT EXISTS idx_matrix_project ON matrix_questions(project_id);
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY, value TEXT NOT NULL
+        );
         """
     )
     # migration: content_hash for de-duplication (older DBs predate this column)
@@ -99,6 +102,40 @@ def dataroom_fingerprint(project_id: str) -> str:
     for r in rows:
         h.update(((r["content_hash"] or r["id"] or "") + "|").encode())
     return h.hexdigest()
+
+
+# --- app-wide settings (key-value) ---
+
+def get_setting(key: str) -> str | None:
+    con = _conn()
+    row = con.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
+    con.close()
+    return row["value"] if row else None
+
+
+def set_setting(key: str, value: str) -> None:
+    con = _conn()
+    con.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?,?)", (key, value))
+    con.commit()
+    con.close()
+
+
+def clear_embeddings_for_model_change() -> list[dict]:
+    """NULL out all stored embeddings and mark every document with chunks as 'indexing'.
+    Called when the embedding model changes so the background worker re-embeds everything.
+    Returns the list of affected documents (id + path) so the caller can re-queue them."""
+    con = _conn()
+    con.execute("UPDATE chunks SET embedding=NULL")
+    con.execute(
+        "UPDATE documents SET status='indexing', chunks_done=0, eta_seconds=NULL "
+        "WHERE n_chunks > 0"
+    )
+    con.commit()
+    rows = con.execute(
+        "SELECT id, project_id, path FROM documents WHERE status='indexing'"
+    ).fetchall()
+    con.close()
+    return [dict(r) for r in rows]
 
 
 # --- projects ---

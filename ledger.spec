@@ -54,8 +54,23 @@ for pkg in ("fastembed", "onnxruntime", "tokenizers", "huggingface_hub", "pydant
     hiddenimports += pkg_hidden
 
 # The embedding model, prefetched into ./models by the build script → bundled offline.
+# HF cache symlinks (snapshots → blobs) can't be recreated by PyInstaller on Windows
+# without admin/Developer Mode, causing the EXE to fail unelevated. Dereference them.
 if Path("models").exists():
+    import shutil
+    for link in sorted(Path("models").rglob("*")):
+        if link.is_symlink():
+            target = link.resolve()
+            link.unlink()
+            shutil.copyfile(target, link)
+    for blobs in Path("models").rglob("blobs"):
+        if blobs.is_dir():
+            shutil.rmtree(blobs, ignore_errors=True)
     datas += [("models", "models")]
+
+# Sample data rooms bundled for out-of-the-box demo (CrowdStrike + Zscaler public SEC).
+if Path("samples").exists():
+    datas += [("samples", "samples")]
 
 a = Analysis(
     ["desktop.py"],

@@ -1,0 +1,16 @@
+"# CrowdStrike — Customer Contracts, Leases & Legal Summary"
+"# Source: SEC EDGAR — XBRL companyfacts (10-K, as reported) + cited 10-K text. USD unless noted."
+Line item,FY2023,FY2024,FY2025,FY2026
+Remaining performance obligations (RPO),3400000000,4600000000,6500000000,9000000000
+Deferred revenue — current,1727484000,2270757000,2733005000,3421051000
+Deferred revenue — noncurrent,627629000,783342000,995672000,1332387000
+Operating lease liability — current,13046000,14150000,13811000,18232000
+Operating lease liability — noncurrent,29567000,36230000,31107000,56374000
+
+# Notes (verified from the official 10-K):
+# Customer contract structure: subscription agreements with terms of one to three years; most billed annually in advance. Revenue recognized ratably over the subscription term.
+# Master agreements include standard indemnification provisions for IP and breach.
+# Lease agreements: real-estate operating leases; total lease cost ~$40.1M in FY2026.
+# Debt indenture: $750.0M 3.00% Senior Notes due February 2029 (governed by an indenture with customary covenants).
+"# Credit agreement: Amended & Restated Credit Agreement (originated April 2019, Silicon Valley Bank); the revolving facility expired in January 2026."
+"# Litigation: subject to claims arising from the July 19, 2024 channel-file incident (shareholder and customer matters disclosed as contingencies)."

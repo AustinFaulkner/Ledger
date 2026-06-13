@@ -1,0 +1,16 @@
+"# CrowdStrike — Debt Schedule, Credit Agreement & Leases"
+"# Source: SEC EDGAR — XBRL companyfacts (10-K, as reported) + cited 10-K text. USD unless noted."
+Line item,FY2023,FY2024,FY2025,FY2026
+"Long-term debt, noncurrent (Senior Notes, carrying value)",741005000,742494000,743983000,745471000
+Interest expense,25319000,25756000,,
+Amortization of debt issuance costs,1300000,1600000,2200000,4000000
+Operating lease liability — current,13046000,14150000,13811000,18232000
+Operating lease liability — noncurrent,29567000,36230000,31107000,56374000
+Total lease cost,21707000,27654000,32371000,40140000
+
+# Notes (verified from the official 10-K):
+"# Senior Notes: $750.0 million aggregate principal, 3.00% fixed coupon, maturing February 2029."
+"# $750.0 million principal amount of indebtedness outstanding as of January 31, 2026."
+"# Credit agreement: Amended & Restated Credit Agreement (April 2019, Silicon Valley Bank); the revolving credit facility (revolver) expired in January 2026 — no revolver capacity at year-end."
+# Debt schedule: single bullet maturity in FY2030 (Feb 2029); no term loan amortization.
+# Capital structure is conservative — net cash positive (cash & investments exceed total debt).

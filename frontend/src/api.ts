@@ -14,6 +14,7 @@ import type {
   QoEReport,
   ReadinessReport,
   RedFlagReport,
+  Sample,
   SearchHit,
   Taxonomy,
   TrackerItem,
@@ -54,6 +55,13 @@ export const api = {
 
   getDocumentStatus: (pid: string, docId: string) =>
     fetch(`${BASE}/projects/${pid}/documents/${docId}/status`).then(json<DocStatus>),
+
+  listSamples: () => fetch(`${BASE}/samples`).then(json<Sample[]>),
+
+  loadSample: (pid: string, company: string, filename: string) =>
+    fetch(`${BASE}/projects/${pid}/documents/sample/${company}/${filename}`, { method: "POST" }).then(
+      json<BulkResult>
+    ),
 
   uploadDocument: (id: string, file: File) => {
     const form = new FormData();

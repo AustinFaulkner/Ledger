@@ -19,6 +19,13 @@ export interface Doc {
   created_at: string;
 }
 
+export interface Sample {
+  name: string;
+  company: string;
+  filename: string;
+  path: string;
+}
+
 export interface DocStatus {
   id: string;
   status: string;

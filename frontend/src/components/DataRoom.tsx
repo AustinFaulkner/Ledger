@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
-import type { DocStatus, ProjectDetail, Taxonomy } from "../types";
+import type { DocStatus, ProjectDetail, Sample, Taxonomy } from "../types";
 import { cn, shortDate } from "../lib";
 import ReadinessTracker from "./ReadinessTracker";
 import DataProfile from "./DataProfile";
@@ -21,12 +21,18 @@ export default function DataRoom({ detail, onChanged }: { detail: ProjectDetail;
   const [note, setNote] = useState<string | null>(null);
   const [tax, setTax] = useState<Taxonomy | null>(null);
   const [liveStatus, setLiveStatus] = useState<Record<string, DocStatus>>({});
+  const [samples, setSamples] = useState<Sample[]>([]);
+  const [loadingSample, setLoadingSample] = useState<string | null>(null);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     api.getTaxonomy(detail.id).then(setTax).catch(() => setTax(null));
   }, [detail.id, detail.documents.length]);
+
+  useEffect(() => {
+    api.listSamples().then(setSamples).catch(() => setSamples([]));
+  }, []);
 
   // Poll status for documents that are still indexing — runs regardless of tab visibility
   // because the server does the work; we only need to refresh the display when we're back.
@@ -102,6 +108,24 @@ export default function DataRoom({ detail, onChanged }: { detail: ProjectDetail;
     }
   }
 
+  async function loadSample(s: Sample) {
+    setLoadingSample(s.name);
+    setErr(null);
+    setNote(null);
+    try {
+      const r = await api.loadSample(detail.id, s.company, s.filename);
+      const parts: string[] = [];
+      if (r.ingested.length) parts.push(`${r.ingested.length} indexing…`);
+      if (r.duplicates.length) parts.push(`${r.duplicates.length} already present`);
+      setNote(parts.join(" · ") || "loaded");
+      onChanged();
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoadingSample(null);
+    }
+  }
+
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_1.4fr]">
       <div>
@@ -127,6 +151,33 @@ export default function DataRoom({ detail, onChanged }: { detail: ProjectDetail;
         </div>
         {note && <p className="mt-3 font-mono text-xs text-brass/80">{note}</p>}
         {err && <p className="mt-3 font-mono text-xs text-negative">{err}</p>}
+
+        {samples.length > 0 && (
+          <div className="mt-6">
+            <div className="eyebrow mb-3">Sample data rooms</div>
+            <div className="flex flex-col gap-2">
+              {samples.map((s) => (
+                <button
+                  key={s.name}
+                  onClick={() => loadSample(s)}
+                  disabled={!!loadingSample}
+                  className={cn(
+                    "flex items-center justify-between rounded-lg border border-line px-4 py-3 text-left transition-colors",
+                    "hover:border-brass/50 hover:bg-surface/50 disabled:opacity-50"
+                  )}
+                >
+                  <div>
+                    <div className="font-body text-sm text-parchment capitalize">{s.company}</div>
+                    <div className="font-mono text-xs text-muted">{s.filename}</div>
+                  </div>
+                  <span className="font-mono text-xs text-brass/70">
+                    {loadingSample === s.name ? "loading…" : "Load →"}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div>

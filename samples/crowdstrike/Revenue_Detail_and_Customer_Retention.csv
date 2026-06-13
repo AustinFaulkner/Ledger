@@ -1,0 +1,17 @@
+"# CrowdStrike — Revenue, Deferred Revenue, RPO & Customer Retention"
+"# Source: SEC EDGAR — XBRL companyfacts (10-K, as reported) + cited 10-K text. USD unless noted."
+Line item,FY2023,FY2024,FY2025,FY2026
+Total revenue,2241236000,3055555000,3953624000,4812005000
+Deferred revenue — current,1727484000,2270757000,2733005000,3421051000
+Deferred revenue — noncurrent,627629000,783342000,995672000,1332387000
+Revenue recognized from beginning deferred balance,1126900000,1718500000,2251300000,2683700000
+Remaining performance obligations (RPO),3400000000,4600000000,6500000000,9000000000
+"Deferred commissions (capitalized contract costs, net)",447088000,582303000,847950000,1103113000
+
+# Notes (verified from the official 10-K):
+"# Dollar-based net retention rate: 115% as of January 31, 2026."
+# Revenue mix: subscription ~95% of total revenue; professional services ~5% (FY2026 & FY2025).
+# International customers: ~32% of total revenue (FY2026).
+"# Customer contracts: subscription terms of one to three years, generally billed annually in advance."
+"# Remaining performance obligations (RPO) of ~$8.8 billion as of April 30, 2026 (FY2027 Q1 10-Q)."
+# Net revenue retention / customer concentration: no single customer represented a significant concentration of total revenue.

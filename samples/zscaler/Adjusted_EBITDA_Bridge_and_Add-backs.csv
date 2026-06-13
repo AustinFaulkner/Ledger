@@ -1,0 +1,18 @@
+"# Zscaler, Inc. — Adjusted EBITDA Bridge & Normalized Add-backs"
+"# Source: SEC EDGAR — XBRL companyfacts (10-K, as reported) + cited 10-K text. USD unless noted."
+Line item,FY2023,FY2024,FY2025
+Reported operating income (loss) [GAAP],-234623000,-121477000,-128460000
+Add: Depreciation & amortization (per cash flow statement),55756000,66308000,104361000
+Add: Amortization of acquired intangible assets,11060000,14624000,16820000
+= EBITDA,-167807000,-40545000,-7279000
+Add: Stock-based compensation,444834000,527676000,661350000
+Add: Restructuring charges (non-recurring),7600000,,4921000
+= Adjusted EBITDA (management basis),284627000,487131000,658992000
+Total revenue (memo),1616952000,2167771000,2673115000
+Adjusted EBITDA margin (memo),17.6%,22.5%,24.6%
+
+# Notes (verified from the official 10-K):
+# EBITDA = reported operating income + depreciation & amortization + amortization of acquired intangible assets (all D&A added back).
+# Adjusted EBITDA adds the standard SaaS normalizations: stock-based compensation (the non-cash item driving the GAAP operating loss) and non-recurring restructuring charges.
+# Restructuring is management's proposed non-recurring add-back; a QoE review should test whether it recurs. Amortization of deferred contract acquisition costs (commissions) is NOT added back — it is a normal operating cost.
+"# Figures are as-reported 10-K values (USD); the D&A line is transcribed from the cash flow statement. One-time classifications are illustrative for the diligence demo, not company-reported non-GAAP measures."

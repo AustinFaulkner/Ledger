@@ -13,7 +13,7 @@ pip install -e .
 pip install -r requirements-desktop.txt
 
 echo === 3/4  Prefetching the embedding model (offline bundle) ===
-python -c "from fastembed import TextEmbedding; TextEmbedding(model_name='BAAI/bge-base-en-v1.5', cache_dir='models')"
+python -c "from fastembed import TextEmbedding; TextEmbedding(model_name='BAAI/bge-small-en-v1.5', cache_dir='models')"
 
 echo === 4/4  Compiling the EXE ===
 pyinstaller ledger.spec --noconfirm --distpath dist_exe

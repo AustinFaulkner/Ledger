@@ -1,0 +1,16 @@
+# CrowdStrike — Income Tax Provision & Deferred Tax
+"# Source: SEC EDGAR — XBRL companyfacts (10-K, as reported) + cited 10-K text. USD unless noted."
+Line item,FY2023,FY2024,FY2025,FY2026
+Income tax expense (benefit),22402000,32232000,71130000,34176000
+Pre-tax income (loss) — domestic,-195042000,82095000,66415000,-151441000
+Pre-tax income (loss) — foreign,35159000,23576000,-7851000,24452000
+Effective tax rate,,,,-26.9%
+Deferred tax assets — gross,1051521000,1171295000,1477500000,1889197000
+Deferred tax assets — net,141451000,213585000,274284000,365699000
+Valuation allowance,910100000,1000000000,1203216000,1523498000
+NOL carryforwards (deferred tax asset),441352000,420803000,400277000,675515000
+R&D tax-credit carryforwards (deferred tax asset),75712000,100002000,144068000,210753000
+
+# Notes (verified from the official 10-K):
+"# Deferred tax: large deferred tax assets from net operating loss carryforwards (NOLs), stock-based compensation and R&D credits, partially offset by a valuation allowance."
+# Tax provision is modest relative to pre-tax results because U.S. losses are sheltered by NOLs; expense is driven largely by foreign jurisdictions.

@@ -1,0 +1,9 @@
+"# CrowdStrike — Organization, Headcount & HR / Stock Compensation"
+"# Source: SEC EDGAR — XBRL companyfacts (10-K, as reported) + cited 10-K text. USD unless noted."
+Line item,FY2023,FY2024,FY2025,FY2026
+Stock-based compensation (total),526504000,648665000,861391000,1096679000
+
+# Notes (verified from the official 10-K):
+"# Headcount: 10,698 full-time employees as of January 31, 2026 (org chart by function: R&D, Sales & Marketing, Cost of Revenue/Cloud Ops, and G&A)."
+# Compensation model is equity-heavy: stock-based compensation is the single largest non-cash expense and the primary driver of GAAP operating losses (see EBITDA add-backs).
+"# Employee census: predominantly U.S.-based, with engineering hubs and international sales offices; no collective-bargaining agreements."

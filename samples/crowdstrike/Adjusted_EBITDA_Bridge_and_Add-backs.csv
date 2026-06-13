@@ -1,0 +1,18 @@
+"# CrowdStrike Holdings, Inc. — Adjusted EBITDA Bridge & Normalized Add-backs"
+"# Source: SEC EDGAR — XBRL companyfacts (10-K, as reported) + cited 10-K text. USD unless noted."
+Line item,FY2024,FY2025,FY2026
+Reported operating income (loss) [GAAP],-19141000,-116400000,-293292000
+Add: Depreciation & amortization (per cash flow statement),126838000,187952000,250218000
+Add: Amortization of acquired intangible assets,18416000,26004000,31233000
+= EBITDA,126113000,97556000,-11841000
+Add: Stock-based compensation,648665000,861391000,1096679000
+Add: Restructuring charges (non-recurring),,,44777000
+= Adjusted EBITDA (management basis),774778000,958947000,1129615000
+Total revenue (memo),3055555000,3953624000,4812005000
+Adjusted EBITDA margin (memo),25.4%,24.2%,23.5%
+
+# Notes (verified from the official 10-K):
+# EBITDA = reported operating income + depreciation & amortization + amortization of acquired intangible assets (all D&A added back).
+# Adjusted EBITDA adds the standard SaaS normalizations: stock-based compensation (the non-cash item driving the GAAP operating loss) and non-recurring restructuring charges.
+# Restructuring is management's proposed non-recurring add-back; a QoE review should test whether it recurs. Amortization of deferred contract acquisition costs (commissions) is NOT added back — it is a normal operating cost.
+"# Figures are as-reported 10-K values (USD); the D&A line is transcribed from the cash flow statement. One-time classifications are illustrative for the diligence demo, not company-reported non-GAAP measures."

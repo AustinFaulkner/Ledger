@@ -23,7 +23,7 @@ from pathlib import Path
 
 import numpy as np
 
-MODEL_NAME = "BAAI/bge-base-en-v1.5"
+MODEL_NAME = "BAAI/bge-small-en-v1.5"
 
 _CALIBRATION_PATH = Path.home() / ".ledger" / "calibration.json"
 # ~200-token prose chunk — representative of what a 10-K narrative produces

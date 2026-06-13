@@ -54,8 +54,23 @@ app.add_middleware(
 @app.on_event("startup")
 async def _startup() -> None:
     store.init_db()
-    # Calibrate embedding throughput once per machine; runs in a thread so startup isn't blocked.
+
     if embeddings.AVAILABLE:
+        stored_model = store.get_setting("embedding_model")
+        if stored_model != embeddings.MODEL_NAME:
+            # Model changed (or first run): null stored embeddings, re-queue docs.
+            affected = store.clear_embeddings_for_model_change()
+            store.set_setting("embedding_model", embeddings.MODEL_NAME)
+            if affected:
+                by_project: dict[str, list[tuple[str, Path]]] = {}
+                for d in affected:
+                    p = Path(d["path"])
+                    if p.exists():
+                        by_project.setdefault(d["project_id"], []).append((d["id"], p))
+                for pid, batch in by_project.items():
+                    asyncio.create_task(asyncio.to_thread(_ingest_many, pid, batch))
+
+        # Calibrate throughput for the current model (fast if already cached).
         asyncio.create_task(asyncio.to_thread(embeddings.calibrate))
 
 
@@ -483,6 +498,74 @@ app.include_router(api)
 
 
 # ---------------------------------------------------- serve the built dashboard
+
+def _samples_dir() -> Path | None:
+    """Locate the bundled samples directory (in EXE or repo)."""
+    base = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[2]))
+    d = base / "samples"
+    return d if d.exists() else None
+
+
+@api.get("/samples")
+def list_samples() -> list[dict]:
+    """List bundled sample data-room zips (name + company label)."""
+    d = _samples_dir()
+    if not d:
+        return []
+    out = []
+    for z in sorted(d.rglob("*.zip")):
+        company = z.parent.name  # e.g. "crowdstrike"
+        out.append({"name": z.stem, "company": company, "filename": z.name, "path": str(z)})
+    return out
+
+
+@api.post("/projects/{pid}/documents/sample/{company}/{filename}")
+async def load_sample(pid: str, company: str, filename: str) -> dict:
+    """Ingest a bundled sample data-room zip into a project."""
+    if not store.get_project(pid):
+        raise HTTPException(404, "project not found")
+    d = _samples_dir()
+    if not d:
+        raise HTTPException(404, "no bundled samples found")
+    path = d / company / filename
+    if not path.exists() or path.suffix.lower() != ".zip":
+        raise HTTPException(404, f"sample not found: {company}/{filename}")
+
+    dest_dir = settings.data_root / "projects" / pid
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        zf = zipfile.ZipFile(path)
+    except zipfile.BadZipFile:
+        raise HTTPException(400, "corrupt sample zip")
+
+    ingested, duplicates, skipped = [], [], []
+    members: list[tuple[str, Path]] = []
+
+    for name in zf.namelist():
+        base = Path(name).name
+        if name.endswith("/") or not base or base.startswith("."):
+            continue
+        if Path(base).suffix.lower() not in ingest.SUPPORTED:
+            skipped.append(base)
+            continue
+        data = zf.read(name)
+        digest = hashlib.sha256(data).hexdigest()
+        existing = store.find_document_by_hash(pid, digest)
+        if existing:
+            duplicates.append(base)
+            continue
+        dest = dest_dir / base
+        dest.write_bytes(data)
+        kind = Path(base).suffix.lower().lstrip(".")
+        doc = store.add_document(pid, base, str(dest), kind, "indexing", 0, content_hash=digest)
+        ingested.append(base)
+        members.append((doc["id"], dest))
+
+    if members:
+        asyncio.create_task(asyncio.to_thread(_ingest_many, pid, members))
+    return {"ingested": ingested, "duplicates": duplicates, "skipped": skipped}
+
 
 def _static_dir() -> Path | None:
     """Locate frontend/dist — bundled by PyInstaller (_MEIPASS) or in the repo."""
