@@ -1,6 +1,6 @@
 # Ledger: QoE & Diligence Analyzer
 
-Small demo of an AI RAG tailed for quality-of-earnings and due-diligence. Upload a target's data room and it produces a normalized EBITDA bridge, working-capital and red-flag analysis, cited answers, and an exportable report.
+Small demo of an AI RAG tailored for quality-of-earnings and due-diligence. Upload a target's data room and it produces a normalized EBITDA bridge, working-capital and red-flag analysis, cited answers, and an exportable report.
 
 ## Features
 
