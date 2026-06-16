@@ -63,6 +63,5 @@ def scan(financials_text: str) -> RedFlagReport:
         "list is a valid answer for a clean data room.\n\n"
         "=== DATA ROOM ===\n" + financials_text
     )
-    # Forensic reasoning → the reasoning-tier model.
     return llm.parse(prompt, RedFlagReport, system=SYSTEM, max_tokens=8000,
                      model=settings.model_reasoning)

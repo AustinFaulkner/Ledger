@@ -72,8 +72,6 @@ def extract(project_id: str) -> dict:
     }
 
 
-# --- table reading ---
-
 def _read_table(doc) -> tuple[list[str] | None, dict[str, list] | None]:
     rows = profiling._read_rows(doc)
     while rows and (not any(str(c).strip() for c in rows[0]) or str(rows[0][0]).lstrip().startswith("#")):
@@ -106,7 +104,7 @@ def _find(table: dict[str, list], *keys) -> list | None:
     return None
 
 
-# --- elementwise numeric helpers (None-safe) ---
+# elementwise numeric helpers (None-safe)
 
 def _abs(x):
     return abs(x) if x is not None else None

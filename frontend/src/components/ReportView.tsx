@@ -118,7 +118,6 @@ export default function ReportView({ projectId, company, dealName }: Props) {
 
   return (
     <div className="mx-auto max-w-4xl">
-      {/* toolbar — excluded from print */}
       <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="eyebrow">Diligence Report</div>
         <div className="flex flex-wrap items-center gap-3">
@@ -144,7 +143,6 @@ export default function ReportView({ projectId, company, dealName }: Props) {
         </div>
       </div>
 
-      {/* generation progress */}
       {Object.keys(gen).length > 0 && (
         <div className="no-print mb-8 flex flex-wrap gap-2">
           {RUNNERS.filter((r) => gen[r.key]).map((r) => {
@@ -168,7 +166,6 @@ export default function ReportView({ projectId, company, dealName }: Props) {
       )}
 
       <article className="report space-y-10">
-        {/* cover */}
         <header className="border-b border-line pb-8">
           <div className="eyebrow mb-3 text-brass">Confidential · Prepared for the deal team</div>
           <h1 className="font-display text-5xl font-medium leading-tight tracking-tight text-parchment">
@@ -182,7 +179,6 @@ export default function ReportView({ projectId, company, dealName }: Props) {
           </div>
         </header>
 
-        {/* executive summary */}
         <Section title="Executive Summary">
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
             <Stat label="Revenue (latest)" value={revenue != null ? finFmt(revenue) : "—"} />
@@ -197,7 +193,7 @@ export default function ReportView({ projectId, company, dealName }: Props) {
           </p>
         </Section>
 
-        {/* financial overview — always available (offline) */}
+        {/* Always available — derived from statement files, no AI run required. */}
         {fin?.available ? (
           <Section title="Financial Overview" note="$ in millions · derived from the statement files">
             <div className="grid gap-8 md:grid-cols-2">
@@ -242,7 +238,6 @@ export default function ReportView({ projectId, company, dealName }: Props) {
           </Section>
         )}
 
-        {/* quality of earnings — from cached QoE run */}
         <Section title="Quality of Earnings" stamp={qoe?.created_at} stale={qoe?.stale}>
           {qoe ? (
             <>
@@ -276,7 +271,6 @@ export default function ReportView({ projectId, company, dealName }: Props) {
           )}
         </Section>
 
-        {/* working capital */}
         <Section title="Working Capital &amp; Cash" stamp={wc?.created_at} stale={wc?.stale}>
           {wc ? (
             <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
@@ -291,7 +285,6 @@ export default function ReportView({ projectId, company, dealName }: Props) {
           {wc?.payload.summary && <p className="mt-4 font-body text-sm leading-relaxed text-muted">{wc.payload.summary}</p>}
         </Section>
 
-        {/* red flags */}
         <Section title="Key Risks &amp; Red Flags" stamp={rf?.created_at} stale={rf?.stale}>
           {rf ? (
             rf.payload.findings.length === 0 ? (
@@ -315,7 +308,6 @@ export default function ReportView({ projectId, company, dealName }: Props) {
           )}
         </Section>
 
-        {/* readiness */}
         {readiness && (
           <Section title="Data-Room Readiness">
             <div className="flex items-center gap-5">

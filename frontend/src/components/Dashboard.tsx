@@ -53,7 +53,6 @@ export default function Dashboard({ projectId, detail, onNavigate }: Props) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-      {/* headline stats */}
       <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-3 lg:grid-cols-6">
         <Tile label="Documents" value={String(detail.documents.length)} onClick={() => onNavigate("dataroom")} />
         <Tile label="Readiness" value={readiness ? `${readiness.score}%` : "—"} onClick={() => onNavigate("dataroom")} />
@@ -64,7 +63,6 @@ export default function Dashboard({ projectId, detail, onNavigate }: Props) {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">
-        {/* documents by category */}
         <div className="panel p-6">
           <SectionHead title="Documents by category" onClick={() => onNavigate("dataroom")} />
           <div className="mt-4 space-y-2">
@@ -83,7 +81,6 @@ export default function Dashboard({ projectId, detail, onNavigate }: Props) {
           </div>
         </div>
 
-        {/* financial snapshot or EBITDA bridge */}
         <div className="panel p-6">
           {qoe ? (
             <>
@@ -119,7 +116,6 @@ export default function Dashboard({ projectId, detail, onNavigate }: Props) {
         </div>
       </div>
 
-      {/* key risks */}
       <div className="panel p-6">
         <SectionHead title="Key risks" onClick={() => onNavigate("redflags")} actionLabel={rf ? "View all" : "Run scan"} />
         {rf && rf.payload.findings.length > 0 ? (

@@ -73,6 +73,5 @@ def analyze(financials_text: str) -> WorkingCapitalReport:
         "any figure you cannot support null rather than guessing.\n\n"
         "=== FINANCIALS ===\n" + financials_text
     )
-    # Heavy reasoning → the reasoning-tier model.
     return llm.parse(prompt, WorkingCapitalReport, system=SYSTEM, max_tokens=9000,
                      model=settings.model_reasoning)

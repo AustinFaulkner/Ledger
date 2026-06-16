@@ -74,7 +74,7 @@ async def _startup() -> None:
         asyncio.create_task(asyncio.to_thread(embeddings.calibrate))
 
 
-# --------------------------------------------------------------------- /api routes
+# /api routes
 
 api = APIRouter(prefix="/api")
 
@@ -497,7 +497,7 @@ def ask(pid: str, body: AskIn) -> dict:
 app.include_router(api)
 
 
-# ---------------------------------------------------- serve the built dashboard
+# serve the built dashboard
 
 def _samples_dir() -> Path | None:
     """Locate the bundled samples directory (in EXE or repo)."""

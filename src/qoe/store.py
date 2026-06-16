@@ -104,7 +104,7 @@ def dataroom_fingerprint(project_id: str) -> str:
     return h.hexdigest()
 
 
-# --- app-wide settings (key-value) ---
+# App-wide settings (key-value).
 
 def get_setting(key: str) -> str | None:
     con = _conn()
@@ -138,7 +138,7 @@ def clear_embeddings_for_model_change() -> list[dict]:
     return [dict(r) for r in rows]
 
 
-# --- projects ---
+# Projects.
 
 def create_project(name: str, company: str | None = None) -> dict:
     pid = _uid()
@@ -178,7 +178,7 @@ def delete_project(pid: str) -> None:
     con.close()
 
 
-# --- documents ---
+# Documents.
 
 def add_document(project_id: str, filename: str, path: str, kind: str,
                  status: str = "ingested", n_chunks: int = 0,
@@ -234,7 +234,7 @@ def list_documents(project_id: str) -> list[dict]:
     return [dict(r) for r in rows]
 
 
-# --- chunks ---
+# Chunks.
 
 def add_chunks(project_id: str, document_id: str, chunks, embeddings_list=None) -> None:
     con = _conn()
@@ -261,7 +261,7 @@ def get_chunks(project_id: str) -> list[dict]:
     return out
 
 
-# --- cached analysis results (so the report compiles without re-running paid models) ---
+# Cached analysis results, so the report compiles without re-running paid models.
 
 def save_report(project_id: str, kind: str, payload: dict) -> dict:
     """Persist an analysis result (qoe / redflags / working_capital) for later reuse,
@@ -295,7 +295,7 @@ def get_report(project_id: str, kind: str) -> dict | None:
     }
 
 
-# --- diligence trackers (issues / request checklist) ---
+# Diligence trackers (issues / request checklist).
 
 def add_tracker_item(project_id: str, title: str, category: str | None = None,
                      owner: str | None = None, note: str | None = None,
@@ -346,7 +346,7 @@ def delete_tracker_item(item_id: str) -> None:
     con.close()
 
 
-# --- editable diligence-matrix questions (per project) ---
+# Editable diligence-matrix questions (per project).
 
 def add_matrix_question(project_id: str, category: str | None, question: str) -> dict:
     qid = _uid()

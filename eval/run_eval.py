@@ -49,7 +49,7 @@ def run() -> None:
         by_category.setdefault(c.get("category", "uncategorized"), []).append(ok)
         print(f"{'PASS' if ok else 'FAIL'}  {c.get('id', '?'):30s} -> {got}")
 
-    print("\n=== Accuracy by category ===")
+    print("\nAccuracy by category")
     overall: list[bool] = []
     for cat, results in sorted(by_category.items()):
         overall += results

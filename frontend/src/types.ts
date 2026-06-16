@@ -79,7 +79,7 @@ export interface Answer {
   confidence: string;
 }
 
-// --- Red flags ---
+// Red flags
 export type Severity = "high" | "medium" | "low";
 
 export interface RedFlag {
@@ -97,7 +97,7 @@ export interface RedFlagReport {
   summary: string;
 }
 
-// --- Working capital + proof of cash ---
+// Working capital + proof of cash
 export interface LineItem {
   label: string;
   amount: number;
@@ -125,7 +125,7 @@ export interface WorkingCapitalReport {
   summary: string;
 }
 
-// --- Data-room readiness ---
+// Data-room readiness
 export interface ReadinessCategory {
   category: string;
   required: boolean;
@@ -142,13 +142,13 @@ export interface ReadinessReport {
   unclassified: string[];
 }
 
-// --- Diligence matrix template ---
+// Diligence matrix template
 export interface MatrixGroup {
   category: string;
   questions: string[];
 }
 
-// --- Editable diligence matrix questions (per project) ---
+// Editable diligence matrix questions (per project)
 export interface MatrixQuestion {
   id: string;
   project_id: string;
@@ -157,7 +157,7 @@ export interface MatrixQuestion {
   created_at: string;
 }
 
-// --- Cross-document search ---
+// Cross-document search
 export interface SearchHit {
   document_id: string;
   filename: string;
@@ -167,7 +167,7 @@ export interface SearchHit {
   score: number;
 }
 
-// --- Tabular data profiling ---
+// Tabular data profiling
 export interface ColumnProfile {
   name: string;
   type: "numeric" | "boolean" | "text";
@@ -191,14 +191,14 @@ export interface DocProfile {
   issues: string[];
 }
 
-// --- Bulk upload result ---
+// Bulk upload result
 export interface BulkResult {
   ingested: string[];
   duplicates: string[];
   skipped: string[];
 }
 
-// --- Financial time-series (for the report charts) ---
+// Financial time-series (for the report charts)
 export interface FinancialSummary {
   periods: string[];
   series: Record<string, (number | null)[]>;
@@ -206,14 +206,14 @@ export interface FinancialSummary {
   available: boolean;
 }
 
-// --- Cached analysis result wrapper ---
+// Cached analysis result wrapper
 export interface CachedReport<T> {
   payload: T;
   created_at: string;
   stale: boolean; // the data room changed since this was generated
 }
 
-// --- Data-room taxonomy (document categories) ---
+// Data-room taxonomy (document categories)
 export interface TaxonomyCategory {
   name: string;
   documents: string[];
@@ -226,7 +226,7 @@ export interface Taxonomy {
   total: number;
 }
 
-// --- Diligence trackers ---
+// Diligence trackers
 export type TrackerStatus = "open" | "in_progress" | "resolved";
 
 export interface TrackerItem {
