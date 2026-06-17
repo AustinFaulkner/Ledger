@@ -1,10 +1,22 @@
 """Benchmark the model's financial reasoning against verified-answer cases.
 
-Each file in ``cases/*.json`` is a scenario with a known answer. We run it through
-the configured model and score the structured output against ground truth, then
-report accuracy per category. See ``eval/README.md`` for the case format.
+Each file in ``cases/*.json`` is a self-contained scenario with a known answer.
+We run it through the configured model, ask it to return exactly the
+``expected`` keys as JSON, and score against ground truth, reporting accuracy
+per category. Case format:
 
-Run:  python eval/run_eval.py
+    {
+      "id": "ebitda-normalization-newco-fy3",    <- unique, shown in results
+      "category": "ebitda_normalization",        <- groups the accuracy summary
+      "prompt": "NewCo reported EBITDA of ...",  <- the question
+      "expected": {"normalized_ebitda": 9185000}
+    }
+
+Numbers are compared with a small relative tolerance; everything else as a
+case-insensitive string. Add a case by dropping a new JSON file in ``cases/``
+— no code changes needed.
+
+Run:  python eval/run_eval.py   (uses the provider/model from your .env)
 """
 
 from __future__ import annotations
@@ -37,7 +49,7 @@ def _safe_json(raw: str) -> dict:
 def run() -> None:
     cases = [json.loads(f.read_text(encoding="utf-8")) for f in sorted(CASES_DIR.glob("*.json"))]
     if not cases:
-        print(f"No cases in {CASES_DIR}. Add JSON cases — see eval/README.md.")
+        print(f"No cases in {CASES_DIR}. Add JSON cases — format in this file's docstring.")
         return
 
     by_category: dict[str, list[bool]] = {}
