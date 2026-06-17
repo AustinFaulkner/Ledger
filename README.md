@@ -16,6 +16,10 @@ and an exportable report.
 - **Report** — print to PDF or export an Excel databook.
 - **Any provider** — runs on any OpenAI-compatible endpoint (OpenAI, OpenRouter, Qwen, Bedrock, self-hosted) with one env var. Bring your own token.
 
+<!-- TODO screenshot: the Quality of Earnings tab on the CrowdStrike sample deal — the reported-to-normalized EBITDA bridge with classified add-backs -->
+![Quality of Earnings: reported-to-normalized EBITDA bridge](docs/screenshots/qoe_bridge.png)
+*The EBITDA bridge on the CrowdStrike sample: reported to normalized, every add-back classified.*
+
 ## Layout
 
 | Path | Purpose |
@@ -84,9 +88,18 @@ offline without one.
 4. Open the Report tab to print a PDF or download the Excel databook.
 
 Citations are clickable: selecting one opens the source document with the
-supporting text highlighted. Two sample data rooms built from real SEC filings
-(CrowdStrike, Zscaler) ship in `samples/` — see
-[samples/README.md](samples/README.md).
+supporting text highlighted.
+
+<!-- TODO screenshot: a cited answer with its citation open — the source document panel showing the highlighted supporting sentence -->
+![Cited Q&A: the answer beside the highlighted source sentence](docs/screenshots/cited_qa.png)
+*Every answer cites its source; selecting the citation highlights the exact sentence.*
+
+Two sample data rooms built from real SEC filings (CrowdStrike, Zscaler) ship
+in `samples/` — see [samples/README.md](samples/README.md).
+
+<!-- TODO screenshot: the data room view with the CrowdStrike sample loaded — auto-categorized documents, profiling, and the readiness checklist at 100% -->
+![Data room: auto-categorized documents and the readiness checklist](docs/screenshots/data_room.png)
+*The data room on the CrowdStrike sample: auto-categorized, profiled, and scored for readiness.*
 
 ## How it works
 
