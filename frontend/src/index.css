@@ -56,9 +56,11 @@
     @apply rounded-xl border border-line bg-surface/70 shadow-panel backdrop-blur-sm;
   }
 
-  /* hairline rule like a ledger line */
+  /* hairline rule like a ledger line. No w-full: a block div spans its parent on
+     its own, and forcing 100% width makes horizontal margins (mx-6) overflow the
+     container instead of insetting the line. */
   .rule {
-    @apply h-px w-full bg-line;
+    @apply h-px bg-line;
   }
 
   .eyebrow {
