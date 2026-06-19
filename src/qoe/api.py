@@ -51,9 +51,49 @@ app.add_middleware(
 )
 
 
+# The deal a first run opens with, so the app has a real data room in it without the
+# visitor having to find the Load Sample button.
+_SEED_NAME = "QoE Demo"
+_SEED_COMPANY = "CrowdStrike Example"
+_SEED_ZIP = ("crowdstrike", "crowdstrike_data_room.zip")
+
+
+def _seed_sample_deal() -> tuple[str, list[tuple[str, Path]]] | None:
+    """First run only: create the CrowdStrike demo deal and stage its data room.
+
+    Returns (project_id, files-to-embed), or None when there is nothing to seed.
+    One-shot, guarded by a stored flag rather than a "no projects yet" check, so
+    deleting the deal keeps it deleted instead of resurrecting it every launch.
+    Best-effort: any failure leaves the app usable and simply unseeded.
+    """
+    if store.get_setting("sample_seeded"):
+        return None
+    store.set_setting("sample_seeded", "1")
+    if store.list_projects():
+        return None  # existing workspace — don't inject a deal into someone's data
+
+    samples = _samples_dir()
+    if samples is None:
+        return None
+    zpath = samples / _SEED_ZIP[0] / _SEED_ZIP[1]
+    if not zpath.exists():
+        return None
+
+    try:
+        pid = store.create_project(_SEED_NAME, _SEED_COMPANY)["id"]
+        with zipfile.ZipFile(zpath) as zf:
+            return pid, _write_zip_members(pid, zf)["members"]
+    except Exception:
+        return None
+
+
 @app.on_event("startup")
 async def _startup() -> None:
     store.init_db()
+
+    seed = _seed_sample_deal()
+    if seed:
+        asyncio.create_task(asyncio.to_thread(_ingest_many, *seed))
 
     if embeddings.AVAILABLE:
         stored_model = store.get_setting("embedding_model")
@@ -200,6 +240,39 @@ def _ingest_many(pid: str, members: list[tuple[str, Path]]) -> None:
         _ingest_one(pid, did, path)
 
 
+def _write_zip_members(pid: str, zf: zipfile.ZipFile) -> dict:
+    """Write a zip's supported files into the project folder and register each as a
+    document. Returns the per-file outcome plus the (doc_id, path) pairs still to be
+    embedded. Shared by bulk upload, sample load, and the first-run seed."""
+    dest_dir = settings.data_root / "projects" / pid
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
+    ingested, duplicates, skipped = [], [], []
+    members: list[tuple[str, Path]] = []
+
+    for name in zf.namelist():
+        base = Path(name).name
+        if name.endswith("/") or not base or base.startswith("."):
+            continue
+        if Path(base).suffix.lower() not in ingest.SUPPORTED:
+            skipped.append(base)
+            continue
+        data = zf.read(name)
+        digest = hashlib.sha256(data).hexdigest()
+        if store.find_document_by_hash(pid, digest):
+            duplicates.append(base)
+            continue
+        dest = dest_dir / base
+        dest.write_bytes(data)
+        kind = Path(base).suffix.lower().lstrip(".")
+        doc = store.add_document(pid, base, str(dest), kind, "indexing", 0, content_hash=digest)
+        ingested.append(base)
+        members.append((doc["id"], dest))
+
+    return {"ingested": ingested, "duplicates": duplicates, "skipped": skipped,
+            "members": members}
+
+
 @api.post("/projects/{pid}/documents")
 async def upload_document(pid: str, file: UploadFile = File(...)) -> dict:
     if not store.get_project(pid):
@@ -234,35 +307,10 @@ async def upload_bulk(pid: str, file: UploadFile = File(...)) -> dict:
     except zipfile.BadZipFile:
         raise HTTPException(400, "not a valid .zip file")
 
-    dest_dir = settings.data_root / "projects" / pid
-    dest_dir.mkdir(parents=True, exist_ok=True)
-
-    ingested, duplicates, skipped = [], [], []
-    members: list[tuple[str, Path]] = []
-
-    for name in zf.namelist():
-        base = Path(name).name
-        if name.endswith("/") or not base or base.startswith("."):
-            continue
-        if Path(base).suffix.lower() not in ingest.SUPPORTED:
-            skipped.append(base)
-            continue
-        data = zf.read(name)
-        digest = hashlib.sha256(data).hexdigest()
-        existing = store.find_document_by_hash(pid, digest)
-        if existing:
-            duplicates.append(base)
-            continue
-        path = dest_dir / base
-        path.write_bytes(data)
-        kind = Path(base).suffix.lower().lstrip(".")
-        doc = store.add_document(pid, base, str(path), kind, "indexing", 0, content_hash=digest)
-        ingested.append(base)
-        members.append((doc["id"], path))
-
-    if members:
-        asyncio.create_task(asyncio.to_thread(_ingest_many, pid, members))
-    return {"ingested": ingested, "duplicates": duplicates, "skipped": skipped}
+    res = _write_zip_members(pid, zf)
+    if res["members"]:
+        asyncio.create_task(asyncio.to_thread(_ingest_many, pid, res["members"]))
+    return {k: res[k] for k in ("ingested", "duplicates", "skipped")}
 
 
 @api.get("/projects/{pid}/search")
@@ -494,10 +542,7 @@ def ask(pid: str, body: AskIn) -> dict:
     return diligence.answer(body.question, chunks).model_dump()
 
 
-app.include_router(api)
-
-
-# serve the built dashboard
+# bundled sample data rooms
 
 def _samples_dir() -> Path | None:
     """Locate the bundled samples directory (in EXE or repo)."""
@@ -539,33 +584,18 @@ async def load_sample(pid: str, company: str, filename: str) -> dict:
     except zipfile.BadZipFile:
         raise HTTPException(400, "corrupt sample zip")
 
-    ingested, duplicates, skipped = [], [], []
-    members: list[tuple[str, Path]] = []
+    res = _write_zip_members(pid, zf)
+    if res["members"]:
+        asyncio.create_task(asyncio.to_thread(_ingest_many, pid, res["members"]))
+    return {k: res[k] for k in ("ingested", "duplicates", "skipped")}
 
-    for name in zf.namelist():
-        base = Path(name).name
-        if name.endswith("/") or not base or base.startswith("."):
-            continue
-        if Path(base).suffix.lower() not in ingest.SUPPORTED:
-            skipped.append(base)
-            continue
-        data = zf.read(name)
-        digest = hashlib.sha256(data).hexdigest()
-        existing = store.find_document_by_hash(pid, digest)
-        if existing:
-            duplicates.append(base)
-            continue
-        dest = dest_dir / base
-        dest.write_bytes(data)
-        kind = Path(base).suffix.lower().lstrip(".")
-        doc = store.add_document(pid, base, str(dest), kind, "indexing", 0, content_hash=digest)
-        ingested.append(base)
-        members.append((doc["id"], dest))
 
-    if members:
-        asyncio.create_task(asyncio.to_thread(_ingest_many, pid, members))
-    return {"ingested": ingested, "duplicates": duplicates, "skipped": skipped}
+# Registered only after EVERY @api route is defined: include_router copies the router's
+# routes at call time, so anything decorated afterwards is silently never served.
+app.include_router(api)
 
+
+# serve the built dashboard
 
 def _static_dir() -> Path | None:
     """Locate frontend/dist — bundled by PyInstaller (_MEIPASS) or in the repo."""
