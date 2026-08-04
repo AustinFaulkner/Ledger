@@ -72,7 +72,7 @@ export default function Dashboard({ projectId, detail, onNavigate }: Props) {
                   {c.name}
                 </span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-ink/60">
-                  <div className="h-full rounded-full bg-brass/55" style={{ width: `${(c.count / maxCat) * 100}%` }} />
+                  <div className="h-full rounded-full bg-brass/80" style={{ width: `${(c.count / maxCat) * 100}%` }} />
                 </div>
                 <span className="num w-6 shrink-0 text-right text-sm text-muted">{c.count || "—"}</span>
               </div>

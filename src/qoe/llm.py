@@ -51,6 +51,40 @@ _ENV_KEYS = [
 ]
 
 
+# How to ask for JSON back:
+#   schema (default) — response_format={"type":"json_schema", strict}, over a
+#                      strict-compliant schema (see _strict_schema). Grammar-enforced, so
+#                      the JSON always parses and optional fields actually get filled.
+#   object           — response_format={"type":"json_object"}; schema guidance from the
+#                      prompt only. Use when a provider's strict mode is unreliable.
+#   none             — no response_format at all.
+JSON_MODE = os.getenv("LLM_JSON_MODE", "schema").lower()
+
+
+def _strict_schema(node):
+    """Make a Pydantic JSON Schema valid for OpenAI-style strict mode.
+
+    Strict mode requires every object to set `additionalProperties: false` and to list
+    EVERY property in `required` — Pydantic does neither, omitting any field that has a
+    default. Sending its raw output is not merely lax: providers build a broken grammar
+    from it and the model decodes until max_tokens, burning ~60s to return truncated
+    JSON. Nullable fields keep their null branch, so "required" costs no information.
+    """
+    if isinstance(node, dict):
+        out = {k: _strict_schema(v) for k, v in node.items()}
+        if out.get("type") == "object" and "properties" in out:
+            out["additionalProperties"] = False
+            out["required"] = list(out["properties"].keys())
+        return out
+    if isinstance(node, list):
+        return [_strict_schema(v) for v in node]
+    return node
+
+
+class TruncatedResponse(RuntimeError):
+    """The model hit max_tokens mid-object. Retrying the same call won't help."""
+
+
 def _aws_creds_present() -> bool:
     return bool(os.getenv("AWS_ACCESS_KEY_ID") or os.getenv("AWS_PROFILE"))
 
@@ -103,9 +137,14 @@ def parse(prompt: str, schema: Type[T], *, system: str | None = None, model: str
           max_tokens: int = 4096, retries: int = 2) -> T:
     """Completion constrained to a Pydantic schema. Optional per-call `model`."""
     schema_dict = schema.model_json_schema()
+    # "Populate every field" matters: without grammar-constrained decoding the model
+    # happily omits properties that carry a default (e.g. RedFlagReport.summary), which
+    # then silently renders as blank in the UI.
     sys = (system or "").rstrip() + (
         "\n\nReturn ONLY a single JSON object that conforms to this JSON Schema. "
-        "No prose, no markdown fences.\n" + json.dumps(schema_dict, indent=2)
+        "Populate EVERY field in the schema — including optional ones — unless the "
+        "sources genuinely provide nothing for it. No prose, no markdown fences.\n"
+        + json.dumps(schema_dict, indent=2)
     )
     err: Exception | None = None
     attempt_prompt = prompt
@@ -153,17 +192,31 @@ class _OpenAICompatible:
         messages.append({"role": "user", "content": prompt})
         kwargs: dict = {"model": model or self.model, "messages": messages,
                         "max_tokens": max_tokens, "temperature": temperature}
-        if json_schema is not None:
-            kwargs["response_format"] = {
-                "type": "json_schema",
-                "json_schema": {"name": "output", "schema": json_schema, "strict": True},
-            }
+        if json_schema is not None and JSON_MODE != "none":
+            kwargs["response_format"] = (
+                {"type": "json_schema",
+                 "json_schema": {"name": "output", "schema": _strict_schema(json_schema),
+                                 "strict": True}}
+                if JSON_MODE == "schema"
+                else {"type": "json_object"}
+            )
         try:
             resp = self.client.chat.completions.create(**kwargs)
         except Exception:
+            # Provider rejected the response_format — the schema is in the system
+            # prompt regardless, so retry unconstrained.
             kwargs.pop("response_format", None)
             resp = self.client.chat.completions.create(**kwargs)
-        return resp.choices[0].message.content or ""
+        choice = resp.choices[0]
+        # Only fatal for structured output: a truncated JSON object can never validate,
+        # so the retry loop would just burn another full generation. Free-text callers
+        # (ping, prose completions) are happy with a short answer.
+        if json_schema is not None and choice.finish_reason == "length":
+            raise TruncatedResponse(
+                f"model {kwargs['model']} hit max_tokens ({max_tokens}) before closing the "
+                "response; raise max_tokens or shrink the context"
+            )
+        return choice.message.content or ""
 
 
 class _Bedrock:

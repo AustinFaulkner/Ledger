@@ -204,7 +204,7 @@ export default function ReportView({ projectId, company, dealName }: Props) {
               )}
               {series["EBITDA"] && (
                 <ChartCard title="EBITDA">
-                  <BarChart labels={periods} values={series["EBITDA"]} format={finFmt} accent="bg-positive/45" />
+                  <BarChart labels={periods} values={series["EBITDA"]} format={finFmt} accent="bg-positive/80" />
                 </ChartCard>
               )}
               {Object.keys(fin.margins).length > 0 && (
@@ -214,7 +214,7 @@ export default function ReportView({ projectId, company, dealName }: Props) {
                     series={Object.entries(fin.margins).map(([name, values], i) => ({
                       name,
                       values,
-                      color: i === 0 ? "rgb(200,169,92)" : "rgb(122,158,127)",
+                      color: i === 0 ? "rgb(0,95,184)" : "rgb(15,123,15)",
                     }))}
                   />
                   <MarginTable periods={periods} margins={fin.margins} />
@@ -227,7 +227,7 @@ export default function ReportView({ projectId, company, dealName }: Props) {
               )}
               {series["Operating cash flow"] && (
                 <ChartCard title="Operating cash flow">
-                  <BarChart labels={periods} values={series["Operating cash flow"]} format={finFmt} accent="bg-positive/45" />
+                  <BarChart labels={periods} values={series["Operating cash flow"]} format={finFmt} accent="bg-positive/80" />
                 </ChartCard>
               )}
             </div>

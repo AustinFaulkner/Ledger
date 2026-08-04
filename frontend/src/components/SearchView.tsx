@@ -125,7 +125,7 @@ function ScoreBar({ score }: { score: number }) {
   return (
     <div className="flex shrink-0 items-center gap-2">
       <div className="h-1 w-16 overflow-hidden rounded-full bg-line">
-        <div className={cn("h-full rounded-full bg-brass/70")} style={{ width: `${pct}%` }} />
+        <div className={cn("h-full rounded-full bg-brass")} style={{ width: `${pct}%` }} />
       </div>
       <span className="num text-[10.5px] text-muted">{score.toFixed(2)}</span>
     </div>

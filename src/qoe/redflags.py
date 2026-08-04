@@ -44,7 +44,9 @@ class RedFlag(BaseModel):
 
 class RedFlagReport(BaseModel):
     findings: list[RedFlag] = Field(default_factory=list)
-    summary: str = ""
+    summary: str = Field(
+        default="", description="2-3 sentence overview of the overall earnings-quality picture"
+    )
 
 
 def scan(financials_text: str) -> RedFlagReport:
@@ -60,7 +62,8 @@ def scan(financials_text: str) -> RedFlagReport:
         "spikes; gross-margin or cash-conversion anomalies; and one-time items treated as "
         "recurring (or vice-versa). The data room is grouped by source file under "
         "'=== filename ===' headers. Only flag what the evidence supports; an empty findings "
-        "list is a valid answer for a clean data room.\n\n"
+        "list is a valid answer for a clean data room.\n"
+        "Finally, write `summary`: 2-3 sentences on the overall earnings-quality picture.\n\n"
         "=== DATA ROOM ===\n" + financials_text
     )
     return llm.parse(prompt, RedFlagReport, system=SYSTEM, max_tokens=8000,

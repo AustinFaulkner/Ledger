@@ -94,7 +94,7 @@ export default function Trackers({ projectId }: { projectId: string }) {
         </div>
         <div className="flex items-center gap-3">
           <div className="h-1.5 w-28 overflow-hidden rounded-full bg-line">
-            <div className="h-full rounded-full bg-positive/70" style={{ width: `${pct}%` }} />
+            <div className="h-full rounded-full bg-positive" style={{ width: `${pct}%` }} />
           </div>
           <span className="num text-xs text-muted">{pct}% closed</span>
         </div>

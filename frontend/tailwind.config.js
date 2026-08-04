@@ -3,26 +3,29 @@ export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      /* Windows 11 Fluent-inspired light theme: mica-gray window, white cards,
+         Segoe UI, Windows accent blue. Token names are kept from the old dark
+         theme so the components read the same — only the values are light now.
+         ink = window background, parchment = primary text. */
       colors: {
-        ink: "#0B0C0E",
-        surface: "#141518",
-        surface2: "#1B1D21",
-        parchment: "#ECE7DD",
-        muted: "#9A958B",
-        line: "rgba(236,231,221,0.10)",
-        brass: "#C8A95C",
-        brassdim: "#9C854A",
-        positive: "#6FB78F",
-        negative: "#D2876B",
+        ink: "#F3F3F3",
+        surface: "#FFFFFF",
+        surface2: "#FAFAFA",
+        parchment: "#1B1B1B",
+        muted: "#616161",
+        line: "#E5E5E5",
+        brass: "#005FB8",
+        brassdim: "#00529F",
+        positive: "#0F7B0F",
+        negative: "#C42B1C",
       },
       fontFamily: {
-        display: ['"Fraunces"', "serif"],
-        body: ['"Hanken Grotesk"', "system-ui", "sans-serif"],
-        mono: ['"IBM Plex Mono"', "monospace"],
+        display: ['"Segoe UI Variable Display"', '"Segoe UI"', "system-ui", "sans-serif"],
+        body: ['"Segoe UI Variable Text"', '"Segoe UI"', "system-ui", "sans-serif"],
+        mono: ['"Cascadia Mono"', "Consolas", "ui-monospace", "monospace"],
       },
       boxShadow: {
-        panel:
-          "inset 0 1px 0 rgba(236,231,221,0.04), 0 24px 70px -40px rgba(0,0,0,0.9)",
+        panel: "0 1px 2px rgba(0,0,0,0.06), 0 4px 12px -8px rgba(0,0,0,0.18)",
       },
       letterSpacing: {
         masthead: "0.18em",

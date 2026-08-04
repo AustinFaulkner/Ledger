@@ -1,6 +1,6 @@
 import { cn } from "../lib";
 
-/** Bespoke, dependency-free charts in the deal-room palette (brass on ink). */
+/** Bespoke, dependency-free charts in the app palette (accent blue on white). */
 
 type Num = number | null;
 
@@ -17,7 +17,7 @@ export function BarChart({
   values,
   format = (n) => n.toLocaleString("en-US", { maximumFractionDigits: 0 }),
   height = 150,
-  accent = "bg-brass/55",
+  accent = "bg-brass/80",
 }: {
   labels: string[];
   values: Num[];
@@ -35,7 +35,7 @@ export function BarChart({
           <div key={i} className="flex flex-1 flex-col items-center justify-end">
             <span className="num mb-1 text-[10.5px] text-parchment/70">{format(v)}</span>
             <div
-              className={cn("w-full max-w-[68px] rounded-t", v < 0 ? "bg-negative/45" : accent)}
+              className={cn("w-full max-w-[68px] rounded-t", v < 0 ? "bg-negative/80" : accent)}
               style={{ height: h }}
             />
             <span className="mt-2 font-mono text-[10.5px] uppercase tracking-wider text-muted">{labels[i]}</span>
@@ -136,7 +136,7 @@ export function Waterfall({
   const max = Math.max(reported, normalized, ...cols.map((c) => c.top), 1) * 1.06;
   const plot = height - 34;
   const color = (k: Col["kind"]) =>
-    k === "base" ? "bg-parchment/25" : k === "total" ? "bg-brass/60" : k === "up" ? "bg-positive/45" : "bg-negative/50";
+    k === "base" ? "bg-muted/45" : k === "total" ? "bg-brass" : k === "up" ? "bg-positive/80" : "bg-negative/80";
 
   return (
     <div>

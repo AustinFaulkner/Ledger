@@ -9,51 +9,35 @@
     height: 100%;
   }
 
+  /* Flat mica window — one light theme, no vignette and no grain. */
   body {
     @apply bg-ink text-parchment font-body antialiased;
-    /* faint brass aura up top + deep vignette, layered under content */
-    background-image:
-      radial-gradient(60rem 32rem at 50% -12rem, rgba(200, 169, 92, 0.10), transparent 70%),
-      radial-gradient(90rem 60rem at 50% 120%, rgba(0, 0, 0, 0.6), transparent 60%);
-    background-attachment: fixed;
-  }
-
-  /* film grain overlay — atmosphere, not decoration */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    pointer-events: none;
-    opacity: 0.04;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   ::selection {
-    background: rgba(200, 169, 92, 0.28);
-    color: #fff;
+    background: rgba(0, 95, 184, 0.20);
+    color: inherit;
   }
 
-  /* slim ledger scrollbar */
+  /* slim Fluent scrollbar */
   * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(236, 231, 221, 0.16) transparent;
+    scrollbar-color: rgba(0, 0, 0, 0.24) transparent;
   }
   *::-webkit-scrollbar {
     width: 9px;
     height: 9px;
   }
   *::-webkit-scrollbar-thumb {
-    background: rgba(236, 231, 221, 0.14);
+    background: rgba(0, 0, 0, 0.22);
     border-radius: 9px;
   }
 }
 
 @layer components {
-  /* a raised ledger panel */
+  /* a white card on the mica background */
   .panel {
-    @apply rounded-xl border border-line bg-surface/70 shadow-panel backdrop-blur-sm;
+    @apply rounded-lg border border-line bg-surface shadow-panel;
   }
 
   /* hairline rule like a ledger line. No w-full: a block div spans its parent on
@@ -72,23 +56,26 @@
            font-mono text-[11px] uppercase tracking-wider text-muted;
   }
 
+  /* Fluent accent button */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-brass/40
-           bg-brass/10 px-4 py-2 font-body text-sm font-medium text-parchment
-           transition-all duration-200 hover:bg-brass/20 hover:border-brass/70
+    @apply inline-flex items-center justify-center gap-2 rounded border border-brass
+           bg-brass px-4 py-2 font-body text-sm font-semibold text-white
+           transition-colors duration-150 hover:bg-brass/90 hover:border-brass/90
+           active:bg-brassdim active:border-brassdim
            disabled:cursor-not-allowed disabled:opacity-40;
   }
 
+  /* Fluent standard (secondary) button */
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line
-           px-3 py-2 font-body text-sm text-muted transition-colors duration-200
-           hover:text-parchment hover:border-parchment/30;
+    @apply inline-flex items-center justify-center gap-2 rounded border border-line
+           bg-surface2 px-3 py-2 font-body text-sm text-parchment transition-colors duration-150
+           hover:bg-ink hover:border-[#d1d1d1] disabled:cursor-not-allowed disabled:opacity-40;
   }
 
   .field {
-    @apply w-full rounded-lg border border-line bg-ink/60 px-3.5 py-2.5 font-body text-sm
-           text-parchment placeholder:text-muted/60 outline-none transition-colors
-           focus:border-brass/60;
+    @apply w-full rounded border border-line bg-surface px-3.5 py-2.5 font-body text-sm
+           text-parchment placeholder:text-muted/70 outline-none transition-colors
+           focus:border-brass;
   }
 
   .num {
@@ -96,66 +83,82 @@
   }
 }
 
+/* Stat rows respond to the *pane* width, not the viewport: opening the docked source
+   viewer halves the workspace while `sm:` breakpoints still read the full window, so a
+   four-across grid of long currency figures collided. Container queries fix that at the
+   real container. The descendant selector is deliberate: Tailwind emits its responsive
+   grid-cols utility after this file, so equal specificity would lose on source order. */
+.pane-cq {
+  container-type: inline-size;
+}
+@container (max-width: 700px) {
+  .pane-cq .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container (max-width: 380px) {
+  .pane-cq .stat-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* Evidence highlighting in the source viewer */
 /* One flat, consistent highlight over the whole evidence sentence(s). No box-shadow
    rings and no layered sub-mark, so overlapping/wrapping lines never read as darker. */
 .evidence-mark {
-  background: rgba(200, 169, 92, 0.22);
+  background: rgba(255, 196, 0, 0.32);
   color: inherit;
   border-radius: 3px;
   animation: evidence-pulse 1.2s ease-out;
 }
 .evidence-row > td {
-  background: rgba(200, 169, 92, 0.22);
+  background: rgba(255, 196, 0, 0.32);
   animation: evidence-pulse 1.2s ease-out;
 }
 /* Gentle confirm pulse — peaks at a medium wash and settles to the resting color;
    never flashes darker than rest, never adds a shadow. */
 @keyframes evidence-pulse {
   0% {
-    background-color: rgba(200, 169, 92, 0.42);
+    background-color: rgba(255, 196, 0, 0.58);
   }
   100% {
-    background-color: rgba(200, 169, 92, 0.22);
+    background-color: rgba(255, 196, 0, 0.32);
   }
 }
 
 /* In-text citations (diligence answers) — Grammarly-style inline references */
 .cite-span {
-  border-bottom: 1px dotted rgba(200, 169, 92, 0.55);
+  border-bottom: 1px dotted rgba(0, 95, 184, 0.55);
   border-radius: 2px;
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 .cite-span:hover,
 .cite-span.is-active {
-  background: rgba(200, 169, 92, 0.20);
-  border-bottom-color: rgba(200, 169, 92, 0.95);
+  background: rgba(0, 95, 184, 0.12);
+  border-bottom-color: rgba(0, 95, 184, 0.95);
 }
 .cite-marker {
   margin: 0 1px 0 2px;
   padding: 0 4px;
-  border: 1px solid rgba(200, 169, 92, 0.4);
+  border: 1px solid rgba(0, 95, 184, 0.4);
   border-radius: 7px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Cascadia Mono", Consolas, ui-monospace, monospace;
   font-size: 9px;
   line-height: 1.4;
-  color: #c8a95c;
+  color: #005fb8;
   cursor: pointer;
   vertical-align: super;
   transition: background-color 0.15s ease;
 }
 .cite-marker:hover {
-  background: rgba(200, 169, 92, 0.22);
+  background: rgba(0, 95, 184, 0.14);
 }
 
 /* Print / Save-as-PDF — strip the app chrome and let the report flow across pages */
 @media print {
   .no-print {
     display: none !important;
-  }
-  body::before {
-    content: none !important;
   }
   html,
   body,

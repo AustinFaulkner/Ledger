@@ -185,9 +185,49 @@ function TextView({ content, quote, claim }: { content: string; quote: string; c
   );
 }
 
+/** Split one CSV line, honouring quoted fields. A naive split(",") tears the data-room
+ *  header/note lines — which are a single quoted field containing commas — into several
+ *  bogus cells. Doubled quotes ("") inside a quoted field are the escaped literal. */
+function splitCsvLine(line: string): string[] {
+  const cells: string[] = [];
+  let cur = "";
+  let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQ) {
+      if (ch === '"') {
+        if (line[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else inQ = false;
+      } else cur += ch;
+    } else if (ch === '"') {
+      inQ = true;
+    } else if (ch === ",") {
+      cells.push(cur);
+      cur = "";
+    } else cur += ch;
+  }
+  cells.push(cur);
+  return cells;
+}
+
 function CsvView({ content, quote, claim }: { content: string; quote: string; claim: string }) {
   const rowRef = useRef<HTMLTableRowElement>(null);
-  const rows = content.trim().split(/\r?\n/).map((line) => line.split(","));
+  const rows = content.trim().split(/\r?\n/).map(splitCsvLine);
+
+  // Data-room CSVs are ragged: section headings and single-value lines sit in the same
+  // file as full 4-column rows. Rendered naively, a short row occupies only the first
+  // column and trails dead space to the right. Spread the table's full column count
+  // across whatever cells the row actually has — 1 cell spans everything, 2 cells take
+  // half each — so every row reaches the right edge. Extra columns go to the leftmost
+  // cells, which is where the long label sits.
+  const maxCols = Math.max(...rows.map((cells) => cells.length));
+  const spansFor = (n: number): number[] => {
+    const base = Math.floor(maxCols / n);
+    const rem = maxCols % n;
+    return Array.from({ length: n }, (_, i) => base + (i < rem ? 1 : 0));
+  };
 
   // Prefer a verbatim row match; otherwise score each row by significant-word overlap
   // with quote+claim (so an empty quote still pinpoints the right line item).
@@ -220,11 +260,13 @@ function CsvView({ content, quote, claim }: { content: string; quote: string; cl
         {rows.map((cells, ri) => {
           const isHit = ri === hitRow;
           const isHeader = ri === 0;
+          const spans = spansFor(cells.length);
           return (
             <tr key={ri} ref={isHit ? rowRef : undefined} className={isHit ? "evidence-row" : ""}>
               {cells.map((c, ci) => (
                 <td
                   key={ci}
+                  colSpan={spans[ci]}
                   className={
                     "border border-line px-2.5 py-1.5 " +
                     (isHeader ? "font-semibold text-muted" : "text-parchment/85")

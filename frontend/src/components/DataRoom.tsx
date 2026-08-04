@@ -137,7 +137,7 @@ export default function DataRoom({ detail, onChanged }: { detail: ProjectDetail;
           onClick={() => input.current?.click()}
           className={cn(
             "flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed px-6 py-16 text-center transition-colors",
-            drag ? "border-brass bg-brass/10" : "border-line hover:border-brass/50 hover:bg-surface/50"
+            drag ? "border-brass bg-brass/10" : "border-[#c8c8c8] bg-surface/60 hover:border-brass/60 hover:bg-surface"
           )}
         >
           <div className="font-display text-lg text-parchment">
@@ -223,7 +223,7 @@ export default function DataRoom({ detail, onChanged }: { detail: ProjectDetail;
                           <div className="flex flex-col items-end gap-1">
                             <div className="w-24 h-1.5 overflow-hidden rounded-full bg-line">
                               <div
-                                className="h-full rounded-full bg-brass/70 transition-all duration-500"
+                                className="h-full rounded-full bg-brass transition-all duration-500"
                                 style={{ width: total > 0 ? `${pct}%` : "15%" }}
                               />
                             </div>

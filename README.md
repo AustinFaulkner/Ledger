@@ -100,11 +100,12 @@ supporting text highlighted.
 ![Cited Q&A: the answer beside the highlighted source sentence](docs/screenshots/cited_qa.png)
 *Every answer cites its source; selecting the citation highlights the exact sentence.*
 
+![Red flags: earnings-quality risks ranked by severity, each traced to its source](docs/screenshots/red_flags.png)
+*Red flags on the CrowdStrike sample: ranked by severity, each with a concrete next
+diligence step and a quote traced back into the filing.*
+
 Two sample data rooms built from real SEC filings (CrowdStrike, Zscaler) ship
 in `samples/` — see [samples/README.md](samples/README.md).
-
-![Data room: auto-categorized documents and the readiness checklist](docs/screenshots/data_room.png)
-*The data room on the CrowdStrike sample: auto-categorized, profiled, and scored for readiness.*
 
 ## How it works
 

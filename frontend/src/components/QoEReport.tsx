@@ -55,7 +55,7 @@ export default function QoEReport({ projectId, hasDocs, onCite }: Props) {
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <AnalysisMeta meta={meta} busy={busy} onRegenerate={regenerate} />
       {err && <p className="font-mono text-xs text-negative">{err}</p>}
-      <div className="panel p-7">
+      <div className="panel pane-cq p-7">
         <div className="flex items-center justify-between">
           <div className="eyebrow">EBITDA Bridge</div>
           <button className="btn-ghost text-xs" onClick={regenerate} disabled={busy}>
@@ -63,7 +63,7 @@ export default function QoEReport({ projectId, hasDocs, onCite }: Props) {
           </button>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-4">
+        <div className="stat-grid mt-6 grid grid-cols-2 gap-6 sm:grid-cols-4">
           <Stat label="Reported EBITDA" value={money(report.reported_ebitda)} />
           <Stat label="Net adjustments" value={signedMoney(delta)} accent />
           <Stat label="Normalized EBITDA" value={money(report.normalized_ebitda)} big />
@@ -86,11 +86,11 @@ export default function QoEReport({ projectId, hasDocs, onCite }: Props) {
               <div className="relative h-6 flex-1 rounded bg-ink/60">
                 <div className="absolute inset-y-0 left-1/2 w-px bg-line" />
                 <div
-                  className={cn("absolute inset-y-0 rounded", a.amount >= 0 ? "left-1/2 bg-positive/40" : "right-1/2 bg-negative/40")}
+                  className={cn("absolute inset-y-0 rounded", a.amount >= 0 ? "left-1/2 bg-positive/70" : "right-1/2 bg-negative/70")}
                   style={{ width: `${(Math.abs(a.amount) / maxAbs) * 50}%` }}
                 />
               </div>
-              <div className={cn("num w-28 shrink-0 text-right text-sm", a.amount >= 0 ? "text-positive" : "text-negative")}>
+              <div className={cn("num w-32 shrink-0 whitespace-nowrap text-right text-sm", a.amount >= 0 ? "text-positive" : "text-negative")}>
                 {signedMoney(a.amount)}
               </div>
             </div>
@@ -103,7 +103,16 @@ export default function QoEReport({ projectId, hasDocs, onCite }: Props) {
           <span className="eyebrow">Adjustments · {report.adjustments.length}</span>
           <span className="font-mono text-[11px] text-muted">click a row to trace its source →</span>
         </div>
-        <table className="mt-3 w-full">
+        {/* Fixed layout with declared widths: the amount column keeps its full width no
+            matter how narrow the pane gets (the docked source viewer halves it), and the
+            label/rationale column absorbs the slack by wrapping instead of clipping. */}
+        <table className="mt-3 w-full table-fixed">
+          <colgroup>
+            <col />
+            <col className="w-[148px]" />
+            <col className="w-[68px]" />
+            <col className="w-[150px]" />
+          </colgroup>
           <tbody>
             {report.adjustments.map((a, i) => {
               const clickable = !!a.evidence_source;
@@ -126,7 +135,14 @@ export default function QoEReport({ projectId, hasDocs, onCite }: Props) {
                     <span className={cn("chip", KIND_STYLE[a.kind])}>{a.kind.replace("_", " ")}</span>
                   </td>
                   <td className="px-3 py-4 align-top font-mono text-[11px] uppercase text-muted">{a.confidence}</td>
-                  <td className={cn("num px-6 py-4 text-right align-top text-sm", a.amount >= 0 ? "text-positive" : "text-negative")}>
+                  {/* nowrap so auto table layout reserves the figure's full width — the
+                      docked source viewer narrows this pane enough to clip it otherwise */}
+                  <td
+                    className={cn(
+                      "num whitespace-nowrap px-6 py-4 text-right align-top text-sm",
+                      a.amount >= 0 ? "text-positive" : "text-negative"
+                    )}
+                  >
                     {signedMoney(a.amount)}
                   </td>
                 </tr>
