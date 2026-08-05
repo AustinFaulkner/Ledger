@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "qoe-diligence-analyzer"
+name = "ledger"
 version = "0.1.0"
 description = "AI-assisted Quality of Earnings and due-diligence analysis for PE deal teams"
 readme = "README.md"
