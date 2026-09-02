@@ -180,7 +180,7 @@ at display time.
 ## Tech Stack
 
 Python · FastAPI · React · Vite · TypeScript · Tailwind · SQLite ·
-fastembed/ONNX · PyInstaller · Docker
+fastembed/ONNX · PyInstaller · Docker · Claude Design for Frontend
 
 ## License
 
