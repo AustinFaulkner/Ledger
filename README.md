@@ -13,14 +13,14 @@ both.
 
 ## Features
 
-- **Quality of earnings** — reported → normalized EBITDA, with every add-back classified.
-- **Working capital & proof of cash** — NWC components, a target peg, and debt-like items.
-- **Red flags** — ranked earnings-quality risks, each tied to a quote from the source documents.
-- **Diligence matrix** — an editable per-deal question set, answered across all documents at once.
-- **Cited Q&A** — every answer links back to the exact sentence it came from.
-- **Data room** — PDF, Excel, Word, PowerPoint, CSV, and more; ZIP upload, dedup, search, profiling, readiness scoring, auto-categorization.
-- **Report** — print to PDF or export an Excel databook.
-- **Any provider** — runs on any OpenAI-compatible endpoint (OpenAI, OpenRouter, Qwen, Bedrock, self-hosted) with one env var. Bring your own token.
+- **Quality of earnings** : reported → normalized EBITDA, with every add-back classified.
+- **Working capital & proof of cash** : NWC components, a target peg, and debt-like items.
+- **Red flags** : ranked earnings-quality risks, each tied to a quote from the source documents.
+- **Diligence matrix** : an editable per-deal question set, answered across all documents at once.
+- **Cited Q&A** : every answer links back to the exact sentence it came from.
+- **Data room** : PDF, Excel, Word, PowerPoint, CSV, and more; ZIP upload, dedup, search, profiling, readiness scoring, auto-categorization.
+- **Report** : print to PDF or export an Excel databook.
+- **Any provider** : runs on any OpenAI-compatible endpoint (OpenAI, OpenRouter, Qwen, Bedrock, self-hosted) with one env var. Bring your own token.
 
 ![Quality of Earnings: reported-to-normalized EBITDA bridge](docs/screenshots/qoe_bridge.png)
 *The EBITDA bridge on the CrowdStrike sample: reported to normalized, every add-back classified.*
@@ -78,7 +78,7 @@ python desktop.py
 copy .env.example .env        # Windows  (macOS/Linux: cp .env.example .env)
 ```
 
-Paste your key into `LLM_API_KEY`. Any OpenAI-compatible token works — the app
+Paste your key into `LLM_API_KEY`. Any OpenAI-compatible token works : the app
 detects the provider from the token, or set `LLM_PROVIDER` explicitly. The
 defaults target a Qwen model on OpenRouter. The `.env` sits next to the EXE
 (`dist_exe\`) for the desktop app, or in the project root for Docker and
@@ -105,7 +105,7 @@ supporting text highlighted.
 diligence step and a quote traced back into the filing.*
 
 Two sample data rooms built from real SEC filings (CrowdStrike, Zscaler) ship
-in `samples/` — see [samples/README.md](samples/README.md).
+in `samples/` : see [samples/README.md](samples/README.md).
 
 ## How it works
 
